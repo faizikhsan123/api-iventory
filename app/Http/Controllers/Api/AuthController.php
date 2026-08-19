@@ -10,45 +10,14 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
-    // Register user baru
-    public function register(Request $request)
-    {
-        // Validasi input
-        $request->validate([
-            'name' => 'required|string|min:3|max:20',
-            'email' => 'required|email|max:50|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
-
-        // Bikin user baru
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
-        ]);
-
-        // Bikin token untuk user ini
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Return response sukses
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User berhasil dibuat',
-            'data' => [
-                'user' => new UserResource($user),
-                'token' => $token,
-            ]
-        ], 201);
-    }
-
+   
     // Login user
     public function login(Request $request)
     {
         // Validasi input
         $request->validate([
-            'email' => 'required|email|max:50|unique:users,email',
-            'password' => 'required|string|min:8',
+            'email' => 'required|email',
+            'password' => 'required|string',
         ]);
 
         // Cari user berdasarkan email

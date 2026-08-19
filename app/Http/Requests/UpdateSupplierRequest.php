@@ -24,8 +24,8 @@ class UpdateSupplierRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'phone' => 'nullable|numeric|min:8|max:15',
-            'email' => 'nullable|email:rfc,dns|unique:suppliers,email',
+            'phone' => 'nullable|string|min:8|max:15',
+            'email' => 'nullable|email',
             'address' => 'nullable|string|min:3|max:200',
         ];
     }

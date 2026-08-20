@@ -38,7 +38,7 @@ class EmployesController extends Controller
     {
         // data ini darri request
         $data = $request->validated();
-       
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -66,7 +66,12 @@ class EmployesController extends Controller
      */
     public function show(Employes $employes)
     {
-        //
+        $employes->load('user');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Employes Ditemukan',
+            'data' => new EmployesResource($employes)
+        ]);
     }
 
     /**
@@ -82,7 +87,12 @@ class EmployesController extends Controller
      */
     public function update(UpdateEmployesRequest $request, Employes $employes)
     {
-        //
+        $employes->update($request->validated());
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Employes Berhasil Diubah',
+            'data' => new EmployesResource($employes)
+        ]);
     }
 
     /**
@@ -90,6 +100,10 @@ class EmployesController extends Controller
      */
     public function destroy(Employes $employes)
     {
-        //
+        $employes->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Employes Berhasil Dihapus',
+        ]);
     }
 }

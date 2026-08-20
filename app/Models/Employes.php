@@ -17,7 +17,13 @@ class Employes extends Model
         'status',
     ];
 
+    // satu karyawan sattu user
     public function user(){
         return $this->belongsTo(User::class);
+    }
+
+    // satu karyawan dapat memiliki banyak transaksi
+    public function transactions(){
+        return $this->hasMany(Transaction::class);
     }
 }

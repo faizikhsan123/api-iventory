@@ -23,7 +23,7 @@ class StoreEmployesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:20'],                                                                                                                                         
             'email' => ['required', 'email', 'max:50', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
             'division' => ['required', 'string', 'max:20'],

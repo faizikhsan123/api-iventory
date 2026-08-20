@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Employes;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,8 +18,32 @@ class EmployesFactory extends Factory
      */
     public function definition(): array
     {
+
         return [
-            //
+            'user_id' => User::inRandomOrder()->value('id'),
+
+            'division' => fake()->randomElement([
+                'GA',
+                'HRD',
+                'IT',
+                'Finance',
+                'Produksi',
+                'Warehouse',
+            ]),
+
+            'position' => fake()->randomElement([
+                'Staff',
+                'Supervisor',
+                'Manager',
+                'Admin',
+                'Operator',
+                'Teknisi',
+            ]),
+
+            'status' => fake()->randomElement([
+                'active',
+                'inactive',
+            ]),
         ];
     }
 }

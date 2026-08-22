@@ -23,11 +23,9 @@ class UpdateEmployesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:20'],
-            'email' => ['required', 'email', 'max:50'],
-            'password' => ['nullable', 'string', 'min:8'],
-            'division' => ['required', 'string', 'max:20'],
-            'position' => ['required', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:20', "min:4"],
+            'division' => ['required', 'string', 'max:20', "min:4"],
+            'position' => ['required', 'string', 'max:20', "min:4"],
             'status' => ['required', 'in:active,inactive'],
         ];
     }

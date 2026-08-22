@@ -64,13 +64,13 @@ class EmployesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Employes $employes)
+    public function show(Employes $employe)
     {
-        $employes->load('user');
+        $employe->load('user');
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Ditemukan',
-            'data' => new EmployesResource($employes)
+            'data' => new EmployesResource($employe)
         ]);
     }
 
@@ -85,22 +85,22 @@ class EmployesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEmployesRequest $request, Employes $employes)
+    public function update(UpdateEmployesRequest $request, Employes $employe)
     {
-        $employes->update($request->validated());
+        $employe->update($request->validated());
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Berhasil Diubah',
-            'data' => new EmployesResource($employes)
+            'data' => new EmployesResource($employe)
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Employes $employes)
+    public function destroy(Employes $employe)
     {
-        $employes->delete();
+        $employe->delete();
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Berhasil Dihapus',

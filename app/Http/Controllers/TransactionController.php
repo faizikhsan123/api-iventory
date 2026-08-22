@@ -46,7 +46,7 @@ class TransactionController extends Controller
 
         $transaksi = Transaction::create([
             'transaction_number' => $transactionNumber,
-            'employes_id' => Auth::user()->employes->id,
+            'employes_id' => $request->employes->id,
         ]);
 
         return response()->json([

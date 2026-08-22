@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\TransactionItem ;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
-    /** @use HasFactory<\Database\Factories\ItemFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -23,6 +23,14 @@ class Item extends Model
         'status',
         'min_stock',
         'description',
-
     ];
+
+    public function transaction_items()
+    {
+        return $this->hasMany(TransactionItem::class, 'items_id');
+    }
+
+    public function stock_history(){
+        return $this->hasMany(StockHistory::class);
+    }
 }

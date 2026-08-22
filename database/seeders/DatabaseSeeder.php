@@ -26,6 +26,10 @@ class DatabaseSeeder extends Seeder
             EmployesSeeder::class,
             ItemSeeder::class,
             TransactionSeeder::class,
+            TransactionItemSeeder::class,
+            ActivitySeeder::class,
+            StockHistorySeeder::class
+   
         ]);
     }
 }

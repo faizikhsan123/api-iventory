@@ -23,6 +23,8 @@ class StoreTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'employes_id' => 'required|exists:employes,id',
+            'note' => 'nullable|string|max:200|min:4',
         ];
     }
 }

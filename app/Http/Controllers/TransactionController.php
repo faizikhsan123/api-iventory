@@ -45,8 +45,9 @@ class TransactionController extends Controller
         );
 
         $transaksi = Transaction::create([
+            ...$request->validated(),
             'transaction_number' => $transactionNumber,
-            'employes_id' => $request->employes->id,
+
         ]);
 
         return response()->json([
@@ -61,7 +62,12 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction)
     {
-        //
+        $transaction->load('employes');
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Transaksi Ditemukan',
+            'data' => new TransactionResource($transaction)
+        ]);
     }
 
     /**

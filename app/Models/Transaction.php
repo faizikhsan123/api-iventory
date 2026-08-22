@@ -13,6 +13,7 @@ class Transaction extends Model
     protected $fillable = [
         'transaction_number',
         'employes_id',
+        'note'
     ];
 
     public function employes()

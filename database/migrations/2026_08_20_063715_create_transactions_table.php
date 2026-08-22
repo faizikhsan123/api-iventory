@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('transaction_number');
             $table->foreignId('employes_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

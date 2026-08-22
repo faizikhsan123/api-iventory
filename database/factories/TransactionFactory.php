@@ -21,6 +21,7 @@ class TransactionFactory extends Factory
         return [
             'transaction_number' => 'TRX-' . fake()->unique()->numberBetween(100000, 999999),
             'employes_id' => Employes::inRandomOrder()->value('id'),
+            'note' => fake()->sentence(),
            
         ];
     }

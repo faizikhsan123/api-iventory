@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTransaction_itemRequest;
 use App\Models\TransactionItem;
 use App\Http\Requests\UpdateTransaction_itemRequest;
 use App\Http\Resources\ItemTransactionResource;
+use App\Models\Item;
 
 class TransactionItemController extends Controller
 {
@@ -15,6 +16,7 @@ class TransactionItemController extends Controller
     public function index()
     {
         $transactionItem = TransactionItem::with('transaction', 'item')->latest()->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
@@ -35,7 +37,27 @@ class TransactionItemController extends Controller
      */
     public function store(StoreTransaction_itemRequest $request)
     {
+
+        $request->validated();
+
+        // ambil item
+        $item = Item::findOrFail($request->items_id);
+
+        // jika item stock tidak mencukupi dari request qty maka tampilkan error
+        if ($item->current_stock < $request->qty) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stok tidak mencukupi',
+            ]);
+        }
+
+        // jika ada kurangi
+        $item->update([
+            'current_stock' => $item->current_stock - $request->qty
+        ]);
+
         $transactionItem = TransactionItem::create($request->validated());
+
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
@@ -71,14 +93,40 @@ class TransactionItemController extends Controller
         UpdateTransaction_itemRequest $request,
         TransactionItem $transactionItem
     ) {
+        $request->validated();
+
+        $oldqty = $transactionItem->qty;
+        $newQty = $request->qty;
+
+        $item = Item::findOrFail($transactionItem->items_id);
+
+        $diffrence = $newQty - $oldqty;
+
+        if ($diffrence > 0) {
+
+            if ($item->current_stock < $diffrence) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok tidak mencukupi',
+                ], 422);
+            }
+            $item->update([
+                'current_stock' => $item->current_stock - $diffrence
+            ]);
+        } else {
+            $item->update([
+                'current_stock' => $item->current_stock + abs($diffrence)
+            ]);
+        }
+
         $transactionItem->update($request->validated());
+
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Berhasil Diubah',
             'data' => new ItemTransactionResource($transactionItem)
         ]);
     }
-
     /**
      * Remove the specified resource from storage.
      */

@@ -23,7 +23,9 @@ class UpdateTransaction_itemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'qty' => 'numeric|min:1|required',
+            'transactions_id' => 'required|exists:transactions,id',
+            'items_id' => 'required|exists:items,id',
+            'qty' => 'numeric|min:1|required|max:100',
         ];
     }
 }

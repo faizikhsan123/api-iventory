@@ -14,8 +14,22 @@ return new class extends Migration
         Schema::create('employes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('division');
-            $table->string('position');
+            $table->enum('division', [
+                'GA',
+                'HRD',
+                'IT',
+                'Finance',
+                'Produksi',
+                'Warehouse',
+            ])->default('HRD');
+            $table->enum('position', [
+                'Staff',
+                'Supervisor',
+                'Manager',
+                'Admin',
+                'Operator',
+                'Teknisi',
+            ])->default('Staff');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

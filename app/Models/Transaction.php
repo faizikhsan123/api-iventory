@@ -25,4 +25,9 @@ class Transaction extends Model
     {
         return $this->hasMany(TransactionItem::class, 'transactions_id');
     }
+    
+     public function stock_history(){
+        return $this->hasMany(StockHistory::class);
+    }
+
 }

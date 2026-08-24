@@ -16,10 +16,10 @@ class EmployesResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => new UserResource($this->whenLoaded('user')),
             'division' => $this->division,
             'position' => $this->position,
-            'status' => $this->status
+            'status' => $this->status,
+            'user_id' => new UserResource($this->whenLoaded('user'))
         ];
     }
 }

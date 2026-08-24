@@ -23,11 +23,21 @@ class StoreEmployesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:20', "min:4"],                                                                                                                                         
+            'name' => ['required', 'string', 'max:20', "min:4"],
             'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email', "max:50"],
             'password' => ['required', 'string', 'min:8', 'max:50'],
-            'division' => ['required', 'string', 'max:20', "min:4"],
-            'position' => ['required', 'string', 'max:20', "min:4"],
+            'division' => 'required|in:GA',
+            'HRD',
+            'IT',
+            'Finance',
+            'Produksi',
+            'Warehouse',
+            'position' => 'required|in:Staff',
+            'Supervisor',
+            'Manager',
+            'Admin',
+            'Operator',
+            'Teknisi',
             'status' => ['required', 'in:active,inactive'],
         ];
     }

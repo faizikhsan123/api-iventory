@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\Supplier;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,9 +23,11 @@ class StockHistoryFactory extends Factory
     {
         return [
             'item_id' => Item::inRandomOrder()->value('id'),
+            'transaction_id' => Transaction::inRandomOrder()->value('id'),
             'supplier_id' => Supplier::inRandomOrder()->value('id'),
             'user_id' => User::inRandomOrder()->value('id'),
             'note' => fake()->sentence(2),
+            'type' => fake()->randomElement(['in', 'out']),
             'qty' => fake()->randomNumber(2),
         ];
     }

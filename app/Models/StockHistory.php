@@ -13,7 +13,9 @@ class StockHistory extends Model
     protected $fillable = [
         'item_id',
         'supplier_id',
+        'transactions_id',
         'qty',
+        'type',
         'note',
         'user_id'
     ];
@@ -28,5 +30,9 @@ class StockHistory extends Model
 
     public function user(){
         return $this->belongsTo(User::class);
+    }
+
+    public function transaction(){
+        return $this->belongsTo(Transaction::class);
     }
 }

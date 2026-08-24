@@ -13,11 +13,34 @@ return new class extends Migration
     {
         Schema::create('stock_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('item_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+
+            $table->foreignId('item_id')
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+
+            $table->foreignId('transaction_id')
+                ->nullable()
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+
+            $table->foreignId('supplier_id')
+                ->nullable()
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+
             $table->integer('qty');
-            $table->string('note')->nullable();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->enum('type', ['in', 'out']);
+
+            $table->string('note');
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+
             $table->timestamps();
         });
     }

@@ -14,7 +14,7 @@ class StockHistoryController extends Controller
      */
     public function index()
     {
-        $stockHistory = StockHistory::with('user', 'item', 'supplier')->latest()->get();
+        $stockHistory = StockHistory::with('user', 'item', 'supplier', 'transaction')->latest()->get();
         return response()->json([
             'success' => true,
             'message' => 'Data StockHistory Ditemukan',

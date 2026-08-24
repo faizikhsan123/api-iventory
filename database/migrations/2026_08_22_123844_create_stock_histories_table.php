@@ -34,7 +34,7 @@ return new class extends Migration
             $table->integer('qty');
             $table->enum('type', ['in', 'out']);
 
-            $table->string('note');
+            $table->string('note')->nullable();
 
             $table->foreignId('user_id')
                 ->constrained()

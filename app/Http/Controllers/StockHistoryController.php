@@ -6,6 +6,8 @@ use App\Models\StockHistory;
 use App\Http\Requests\StoreStockHistoryRequest;
 use App\Http\Requests\UpdateStockHistoryRequest;
 use App\Http\Resources\StockHistoryResource;
+use App\Models\Item;
+use Illuminate\Support\Facades\Auth;
 
 class StockHistoryController extends Controller
 {
@@ -35,7 +37,22 @@ class StockHistoryController extends Controller
      */
     public function store(StoreStockHistoryRequest $request)
     {
-        //
+         
+        $item = Item::findOrFail($request->item_id);
+        $item->update([
+            'current_stock' => $item->current_stock + $request->qty
+        ]);
+        $stockHistory = StockHistory::create([
+            ...$request->validated(),
+            'type' => 'in',
+            'user_id' => Auth::id()          
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data StockHistory Berhasil Ditambahkan',
+            'data' => new StockHistoryResource($stockHistory)
+        ]);
     }
 
     /**
@@ -43,7 +60,12 @@ class StockHistoryController extends Controller
      */
     public function show(StockHistory $stockHistory)
     {
-        //
+        $stockHistory->load('user', 'item', 'supplier', 'transaction');
+        return response()->json([
+            'success' => true,
+            'message' => 'Data StockHistory Ditemukan',
+            'data' => new StockHistoryResource($stockHistory)
+        ]);
     }
 
     /**

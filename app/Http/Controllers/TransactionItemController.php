@@ -7,6 +7,8 @@ use App\Models\TransactionItem;
 use App\Http\Requests\UpdateTransaction_itemRequest;
 use App\Http\Resources\ItemTransactionResource;
 use App\Models\Item;
+use App\Models\StockHistory;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionItemController extends Controller
 {
@@ -16,7 +18,6 @@ class TransactionItemController extends Controller
     public function index()
     {
         $transactionItem = TransactionItem::with('transaction', 'item')->latest()->get();
-
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
@@ -51,10 +52,20 @@ class TransactionItemController extends Controller
             ]);
         }
 
+        // buat stock history
+        StockHistory::create([
+            'items_id' => $request->items_id,
+            'qty' => $request->qty,
+            'type' => 'out',
+            'note' => 'Stock Keluar',
+            'user_id' => Auth::id()
+        ]);
+
         // jika ada kurangi
         $item->update([
             'current_stock' => $item->current_stock - $request->qty
         ]);
+        
 
         $transactionItem = TransactionItem::create($request->validated());
 
@@ -102,8 +113,7 @@ class TransactionItemController extends Controller
 
         $diffrence = $newQty - $oldqty;
 
-        if ($diffrence > 0) {
-
+        if ($diffrence > 0) {   
             if ($item->current_stock < $diffrence) {
                 return response()->json([
                     'success' => false,
@@ -111,7 +121,7 @@ class TransactionItemController extends Controller
                 ], 422);
             }
             $item->update([
-                'current_stock' => $item->current_stock - $diffrence
+                'current_stock' => $item->current_stock - $diffrence   
             ]);
         } else {
             $item->update([

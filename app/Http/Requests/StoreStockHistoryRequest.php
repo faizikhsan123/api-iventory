@@ -28,7 +28,7 @@ class StoreStockHistoryRequest extends FormRequest
             // 'transaction_id' => 'nullable|exists:transactions,id',
             'qty' => 'required|numeric|min:1|max:1000000',
             // 'type' => 'required|in:in,out',
-            'note' => 'nullable|string|max:200|min:4',
+           
             // 'user_id' => 'nullable|exists:users,id',
         ];
     }

@@ -45,6 +45,7 @@ class StockHistoryController extends Controller
         $stockHistory = StockHistory::create([
             ...$request->validated(),
             'type' => 'in',
+            'note' => 'Stock Masuk',
             'user_id' => Auth::id()          
         ]);
 

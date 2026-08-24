@@ -6,7 +6,9 @@ use App\Models\Employes;
 use App\Http\Requests\StoreEmployesRequest;
 use App\Http\Requests\UpdateEmployesRequest;
 use App\Http\Resources\EmployesResource;
+use App\Models\Activity;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class EmployesController extends Controller
 {
@@ -52,6 +54,12 @@ class EmployesController extends Controller
             'status' => $data['status'],
         ]);
 
+          Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => " Add Employes {$employes['name']}",
+          
+        ]);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Berhasil Ditambahkan',
@@ -88,6 +96,11 @@ class EmployesController extends Controller
     public function update(UpdateEmployesRequest $request, Employes $employe)
     {
         $employe->update($request->validated());
+
+        Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "update employe {$employe['name']}",
+        ]);
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Berhasil Diubah',
@@ -101,6 +114,11 @@ class EmployesController extends Controller
     public function destroy(Employes $employe)
     {
         $employe->delete();
+         Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "delete employe {$employe['name']}",
+        ]);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Berhasil Dihapus',

@@ -6,6 +6,8 @@ use App\Models\Item;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Http\Resources\ItemsResourcec;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
@@ -57,6 +59,11 @@ class ItemController extends Controller
             'status' => 'available',
         ]);
 
+        Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "Add Item {$items['name']}",
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Data Item Berhasil Ditambahkan',
@@ -90,6 +97,10 @@ class ItemController extends Controller
     public function update(UpdateItemRequest $request, Item $item)
     {
         $item->update($request->validated());
+        Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "Update Item {$item['name']}",
+        ]);
         return response()->json([
             'success' => true,
             'message' => 'Data Item Berhasil Diubah',
@@ -103,6 +114,11 @@ class ItemController extends Controller
     public function destroy(Item $item)
     {
         $item->delete();
+         Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "delete Item {$item['name']}",
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Data Item Berhasil Dihapus'

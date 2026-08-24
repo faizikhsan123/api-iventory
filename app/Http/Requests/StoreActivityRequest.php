@@ -23,7 +23,7 @@ class StoreActivityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'activity' => 'required|string|max:50',
+           
         ];
     }
 }

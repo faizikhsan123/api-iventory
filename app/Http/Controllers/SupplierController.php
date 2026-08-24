@@ -6,6 +6,8 @@ use App\Models\Supplier;
 use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use App\Http\Resources\SupplierResource;
+use App\Models\Activity;
+use Illuminate\Support\Facades\Auth;
 
 class SupplierController extends Controller
 {
@@ -36,6 +38,11 @@ class SupplierController extends Controller
     public function store(StoreSupplierRequest $request)
     {
         $supplier = Supplier::create($request->validated());
+        
+         Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "Add Supplier {$supplier['name']}",
+        ]);
         return response()->json([
             'success' => true,
             'message' => 'Data Supplier Berhasil Ditambahkan',
@@ -69,6 +76,10 @@ class SupplierController extends Controller
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
         $supplier->update($request->validated());
+         Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "Update Supplier {$supplier['name']}",
+        ]);
         return response()->json([
             'success' => true,
             'message' => 'Data Supplier Berhasil Diubah',
@@ -82,6 +93,10 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
+         Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "Delete Supplier {$supplier['name']}",
+        ]);
         return response()->json([
             'success' => true,
             'message' => 'Data Supplier Berhasil Dihapus'

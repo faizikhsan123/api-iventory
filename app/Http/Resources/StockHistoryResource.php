@@ -18,7 +18,6 @@ class StockHistoryResource extends JsonResource
             'qty' => $this->qty,
             'type' => $this->type,
             'note' => $this->note,
-            'transaction_id' => new TransactionResource($this->whenLoaded('transaction')),
             'user_id' => new UserResource($this->whenLoaded('user')),
             'item_id' => new ItemsResourcec($this->whenLoaded('item')),
             'supplier_id' => new SupplierResource($this->whenLoaded('supplier')),

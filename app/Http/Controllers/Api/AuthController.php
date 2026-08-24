@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Models\Activity;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-   
+
     // Login user
     public function login(Request $request)
     {
@@ -34,6 +36,12 @@ class AuthController extends Controller
         // Bikin token baru
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Buat activity
+        Activity::create([
+            'user_id' => $user->id,
+            'activity' => "{$user['name']} login ",
+        ]);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Login berhasil',
@@ -55,6 +63,14 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+
+        $user = $request->user();
+
+        // Buat activity
+        Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => "{$user['name']} logout ",
+        ]);
         return response()->json([
             'status' => 'success',
             'message' => 'logout berhasil'

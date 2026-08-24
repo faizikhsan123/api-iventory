@@ -16,20 +16,14 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('division', [
                 'GA',
-                'HRD',
-                'IT',
-                'Finance',
-                'Produksi',
-                'Warehouse',
-            ])->default('HRD');
+                'INC-PMR',
+                'INC-ER',
+            ])->default('GA');
             $table->enum('position', [
-                'Staff',
                 'Supervisor',
-                'Manager',
-                'Admin',
-                'Operator',
-                'Teknisi',
-            ])->default('Staff');
+                'Foreman',
+                'Technician',
+            ])->default('Technician');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });

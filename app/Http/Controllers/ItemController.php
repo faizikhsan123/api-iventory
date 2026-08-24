@@ -106,6 +106,6 @@ class ItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data Item Berhasil Dihapus'
-        ]); 
+        ]);
     }
 }

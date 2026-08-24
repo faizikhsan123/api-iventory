@@ -12,7 +12,7 @@ class UpdateItemRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class UpdateItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048   ',
+            'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
             'name' => 'required|max:50',
             'category' => 'required|in:apd,tools',
             'brand' => 'required|max:20',

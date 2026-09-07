@@ -51,17 +51,27 @@ class ItemController extends Controller
             $filePath = $request->file('file')->store('items', 'public');
         }
 
+        $data = $request->validated();
+
         $items = Item::create([
-            ...$request->validated(),
+           'file' => $data['file'],
+           'name' => $data['name'],
+           'category' => $data['category'],
+           'brand' => $data['brand'],
+           'type' => $data['type'],
+           'min_stock' => $data['min_stock'],
+           'size' => $data['size'],
+           'unit' => $data['unit'],
+           'description' => $data['description'],
             'part_number' => $partNumber,
             'file' => $filePath,
             'current_stock' => 0,
-            'status' => 'available',
+             'status' => 'out_of_stock',
         ]);
 
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Add Item {$items['name']}",
+            'activity' => "Add Item {$items->name}",
         ]);
 
         return response()->json([
@@ -94,19 +104,40 @@ class ItemController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateItemRequest $request, Item $item)
-    {
-        $item->update($request->validated());
-        Activity::create([
-            'user_id' => Auth::user()->id,
-            'activity' => "Update Item {$item['name']}",
-        ]);
-        return response()->json([
-            'success' => true,
-            'message' => 'Data Item Berhasil Diubah',
-            'data' => new ItemsResourcec($item)
-        ]);
+   public function update(UpdateItemRequest $request, Item $item)
+{
+    $filePath = $item->file;
+
+    if ($request->hasFile('file')) {
+      
+        $filePath = $request->file('file')->store('items', 'public');
     }
+
+    $data = $request->validated();
+
+    $item->update([
+        'name' => $data['name'],
+        'category' => $data['category'],
+        'brand' => $data['brand'],
+        'type' => $data['type'],
+        'min_stock' => $data['min_stock'],
+        'size' => $data['size'],
+        'unit' => $data['unit'],
+        'description' => $data['description'],
+        'file' => $filePath,
+    ]);
+
+    Activity::create([
+        'user_id' => Auth::id(),
+        'activity' => "Update Item {$item->name}",
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Data Item Berhasil Diubah',
+        'data' => new ItemsResourcec($item->fresh()) // fresh() biar ambil data terbaru
+    ]);
+}
 
     /**
      * Remove the specified resource from storage.
@@ -116,7 +147,7 @@ class ItemController extends Controller
         $item->delete();
          Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "delete Item {$item['name']}",
+            'activity' => "delete Item {$item->name}",
         ]);
 
         return response()->json([

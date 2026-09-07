@@ -12,6 +12,7 @@ class Employes extends Model
 
     protected $fillable = [
         'user_id',
+        'transactions_id',
         'division',
         'position',
         'status',
@@ -24,6 +25,6 @@ class Employes extends Model
 
     // satu karyawan dapat memiliki banyak transaksi
     public function transactions(){
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class,);
     }
 }

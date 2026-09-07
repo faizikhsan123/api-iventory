@@ -19,7 +19,7 @@ class Employes extends Model
 
     // satu karyawan sattu user
     public function user(){
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // satu karyawan dapat memiliki banyak transaksi

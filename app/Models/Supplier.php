@@ -14,7 +14,8 @@ class Supplier extends Model
         'name',
         'phone',
         'email',
-        'address'
+        'address',
+        'status'
     ];
 
     public function stock_history(){

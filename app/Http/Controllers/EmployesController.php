@@ -51,7 +51,7 @@ class EmployesController extends Controller
             'user_id' => $user->id,
             'division' => $data['division'],
             'position' => $data['position'],
-            'status' => $data['status'],
+            'status' => 'active',
         ]);
 
           Activity::create([
@@ -93,20 +93,33 @@ class EmployesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateEmployesRequest $request, Employes $employe)
-    {
-        $employe->update($request->validated());
+  public function update(UpdateEmployesRequest $request, Employes $employe)
+{
+    $validated = $request->validated();
 
-        Activity::create([
-            'user_id' => Auth::user()->id,
-            'activity' => "update employe {$employe['name']}",
-        ]);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data Employes Berhasil Diubah',
-            'data' => new EmployesResource($employe)
-        ]);
-    }
+    $employe->update([
+        'division' => $validated['division'],
+        'position' => $validated['position'],
+        'status'   => $validated['status'],
+    ]);
+
+    $employe->user()->update([
+        'name'     => $validated['name'],
+        'email'    => $validated['email'],
+        'password' => bcrypt($validated['password']),
+    ]);
+
+    Activity::create([
+        'user_id' => Auth::user()->id,
+        'activity' => "update employe {$employe->user->name}",
+    ]);
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Data Employes Berhasil Diubah',
+        'data' => new EmployesResource($employe->fresh()->load('user')),
+    ]);
+}
 
     /**
      * Remove the specified resource from storage.

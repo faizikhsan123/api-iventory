@@ -37,12 +37,21 @@ class SupplierController extends Controller
      */
     public function store(StoreSupplierRequest $request)
     {
-        $supplier = Supplier::create($request->validated());
-        
+       $data = $request->validated();
+
+     $supplier = Supplier::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'phone' => $data['phone'],
+        'address' => $data['address'],
+        'status' => 'active'
+
+     ]);
+
          Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Add Supplier {$supplier['name']}",
-        ]);
+            'activity' => "Add Supplier {$supplier->name}",
+        ]); 
         return response()->json([
             'success' => true,
             'message' => 'Data Supplier Berhasil Ditambahkan',
@@ -74,18 +83,28 @@ class SupplierController extends Controller
      * Update the specified resource in storage.
      */
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
-    {
-        $supplier->update($request->validated());
-         Activity::create([
-            'user_id' => Auth::user()->id,
-            'activity' => "Update Supplier {$supplier['name']}",
-        ]);
-        return response()->json([
-            'success' => true,
-            'message' => 'Data Supplier Berhasil Diubah',
-            'data' => new SupplierResource($supplier)
-        ]);
-    }
+{
+    $data = $request->validated();
+
+    $supplier->update([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'phone' => $data['phone'],
+        'address' => $data['address'],
+        'status' => $data['status'],
+    ]);
+
+    Activity::create([
+        'user_id' => Auth::user()->id,
+        'activity' => "Update Supplier {$supplier->name}",
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Data Supplier Berhasil Diubah',
+        'data' => new SupplierResource($supplier),
+    ]);
+}
 
     /**
      * Remove the specified resource from storage.
@@ -95,7 +114,7 @@ class SupplierController extends Controller
         $supplier->delete();
          Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Delete Supplier {$supplier['name']}",
+            'activity' => "Delete Supplier {$supplier->name}",
         ]);
         return response()->json([
             'success' => true,

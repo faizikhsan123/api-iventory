@@ -22,6 +22,7 @@ class SupplierFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'address' => fake()->address(),
             'email' => fake()->email(),
+            'status' => fake()->randomElement(['active', 'inactive'])
         ];
     }
 }

@@ -17,17 +17,23 @@ class EmployesController extends Controller
      */
     public function index()
     {
-        $employes = Employes::with('user')->latest()->get();
+        //"Ambil relasi transactions yang ada di Employes, terus di dalam relasi itu di-join sama tabel transaction_items — nyambunginnya lewat syarat transaction_items.transaction_id harus sama dengan transactions.id (jadi ketemu barang-barang yang ada di transaksi itu), lalu dari hasil join itu ambil kolom quantity-nya aja buat dijumlahin (SUM), dan hasil jumlahnya itu yang jadi nilai given_items_count."
+      $employes = Employes::with('user')
+    ->withSum(['transactions as given_items_count' => function ($q) {
+        $q->join('transaction_items', 'transaction_items.transactions_id', '=', 'transactions.id');
+    }], 'transaction_items.qty')
+    ->latest()
+    ->get();
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Ditemukan',
             'data' => EmployesResource::collection($employes)
         ]);
-    }
+    }       
 
     /**
      * Show the form for creating a new resource.
-     */
+     */ 
     public function create()
     {
         //

@@ -19,6 +19,7 @@ class EmployesResource extends JsonResource
             'division' => $this->division,
             'position' => $this->position,
             'status' => $this->status,
+            'given_items_count' => (int) ($this->given_items_count ?? 0),
             'user_id' => new UserResource($this->whenLoaded('user')),
         
         ];

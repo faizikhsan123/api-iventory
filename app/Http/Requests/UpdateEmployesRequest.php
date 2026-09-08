@@ -24,7 +24,7 @@ class UpdateEmployesRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:20', "min:4"],
-            'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email', "max:50"],
+            'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email', "max:50",],
             'password' => ['required', 'string', 'min:8', 'max:50'],
             'division' => ['required', 'in:GA,INC-PMR,INC-ER'],
             'position' => ['required', 'in:Technician,Supervisor,Foreman'],

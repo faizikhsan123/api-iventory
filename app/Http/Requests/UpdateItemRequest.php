@@ -29,7 +29,7 @@ class UpdateItemRequest extends FormRequest
             'brand' => 'required|max:20',
             'type' => 'nullable|max:20',
             'min_stock' => 'nullable|numeric',
-            'size' => 'nullable|max:10',
+           'size' => 'required|in:s,m,l,xl,xxl,universal',
             'unit' => 'required|in:pcs,set,unit,pair',
             'description' => 'nullable|max:200'
 

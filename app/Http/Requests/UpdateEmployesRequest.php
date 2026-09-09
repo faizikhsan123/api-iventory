@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateEmployesRequest extends FormRequest
 {
@@ -24,7 +25,11 @@ class UpdateEmployesRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:20', "min:4"],
-            'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email', "max:50",],
+            'email' => ['required',
+             'email:dns,rfc', 'max:50', 
+             Rule::unique('users', 'email')->ignore($this->route('users'))
+
+        ],
             'password' => ['required', 'string', 'min:8', 'max:50'],
             'division' => ['required', 'in:GA,INC-PMR,INC-ER'],
             'position' => ['required', 'in:Technician,Supervisor,Foreman'],

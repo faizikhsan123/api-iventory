@@ -19,7 +19,13 @@ return new class extends Migration
             $table->enum('category', ['apd','tools'])->default('apd');
             $table->string('brand');
             $table->string('type')->nullable();
-            $table->string('size')->nullable();
+            $table->enum('size', [
+                's',
+                'm',
+                'l',
+                'xl',
+                'xxl',
+                'universal'])->nullable();
             $table->enum('unit', ['pcs', 'set', 'unit', 'pair'])->default('pcs');
             $table->integer('min_stock')->nullable();
             $table->integer('current_stock')->nullable();
@@ -31,7 +37,7 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     */
+     */ 
     public function down(): void
     {
         Schema::dropIfExists('items');

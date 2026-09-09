@@ -51,11 +51,12 @@ class ItemFactory extends Factory
             'type' => fake()->words(2, true),
 
             'size' => fake()->randomElement([
-                'S',
-                'M',
-                'L',
-                'XL',
-                'XXL',
+                's',
+                'm',
+                'l',
+                'xl',
+                'xxl',
+                'universal'
             ]),
 
             'unit' => fake()->randomElement([

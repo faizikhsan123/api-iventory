@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateItemRequest;
 use App\Http\Resources\ItemsResourcec;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Auth;
+use Mockery\Undefined;
 
 class ItemController extends Controller
 {
@@ -54,15 +55,15 @@ class ItemController extends Controller
         $data = $request->validated();
 
         $items = Item::create([
-           'file' => $data['file'],
+          
            'name' => $data['name'],
            'category' => $data['category'],
            'brand' => $data['brand'],
-           'type' => $data['type'],
-           'min_stock' => $data['min_stock'],
+           'type' => $data['type'] ?? null,
+           'min_stock' => $data['min_stock'] ?? null,
            'size' => $data['size'],
            'unit' => $data['unit'],
-           'description' => $data['description'],
+           'description' => $data['description'] ?? null,
             'part_number' => $partNumber,
             'file' => $filePath,
             'current_stock' => 0,
@@ -119,11 +120,11 @@ class ItemController extends Controller
         'name' => $data['name'],
         'category' => $data['category'],
         'brand' => $data['brand'],
-        'type' => $data['type'],
-        'min_stock' => $data['min_stock'],
+        'type' => $data['type'] ?? null,
+        'min_stock' => $data['min_stock'] ?? null,
         'size' => $data['size'],
         'unit' => $data['unit'],
-        'description' => $data['description'],
+        'description' => $data['description'] ?? null,
         'file' => $filePath,
     ]);
 

@@ -27,7 +27,7 @@ class StoreItemRequest extends FormRequest
             'name' => 'required|max:50',
             'category' => 'required|in:apd,tools',
             'brand' => 'required|max:20',
-            'type' => 'nullable|max:20',
+            'type' => 'nullable|max:20|string',
             'min_stock' => 'nullable|numeric',
             'size' => 'required|in:s,m,l,xl,xxl,universal',
             'unit' => 'required|in:pcs,set,unit,pair',

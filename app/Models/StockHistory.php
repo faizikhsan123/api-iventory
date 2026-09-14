@@ -16,6 +16,7 @@ class StockHistory extends Model
         'qty',
         'type',
         'note',
+        'date',
         'user_id'
     ];
 

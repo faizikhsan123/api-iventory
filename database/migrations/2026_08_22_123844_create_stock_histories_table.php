@@ -30,10 +30,14 @@ return new class extends Migration
 
             $table->string('note')->nullable();
 
+            $table->date('date');
+
             $table->foreignId('user_id')
                 ->constrained()
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
+
+            
 
             $table->timestamps();
         });

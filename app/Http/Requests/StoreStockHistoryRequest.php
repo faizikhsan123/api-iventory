@@ -24,12 +24,17 @@ class StoreStockHistoryRequest extends FormRequest
     {
         return [
             'item_id' => 'required|exists:items,id',
-            'supplier_id' => 'nullable|exists:suppliers,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'date' => 'required|date_format:Y-m-d',
             // 'transaction_id' => 'nullable|exists:transactions,id',
             'qty' => 'required|numeric|min:1|max:1000000',
+            'note' => 'nullable|string|min:4|max:200',
             // 'type' => 'required|in:in,out',
-           
+
             // 'user_id' => 'nullable|exists:users,id',
         ];
     }
 }
+
+
+

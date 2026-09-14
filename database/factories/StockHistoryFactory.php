@@ -1,11 +1,13 @@
 <?php
 
 namespace Database\Factories;
+
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+
 /**
  * @extends Factory<StockHistory>
  */
@@ -25,6 +27,8 @@ class StockHistoryFactory extends Factory
             'note' => fake()->sentence(2),
             'type' => fake()->randomElement(['in', 'out']),
             'qty' => fake()->randomNumber(2),
+            'date' => fake()->date('Y-m-d'),
+
         ];
     }
 }

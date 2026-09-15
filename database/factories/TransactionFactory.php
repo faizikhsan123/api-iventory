@@ -19,10 +19,11 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'transaction_number' => 'TRX-' . fake()->unique()->numberBetween(100000, 999999),
+            'transaction_number' => 'TRX-'.fake()->unique()->numberBetween(100000, 999999),
             'employes_id' => Employes::inRandomOrder()->value('id'),
+            'date' => fake()->date('Y-m-d'),
             'note' => fake()->sentence(),
-           
+
         ];
     }
 }

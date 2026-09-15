@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreStockHistoryRequest;
+use App\Http\Requests\StoreTransaction_itemRequest;
 use App\Http\Requests\UpdateStockHistoryRequest;
+use App\Http\Resources\ItemTransactionResource;
 use App\Http\Resources\StockHistoryResource;
 use App\Models\Item;
 use App\Models\StockHistory;
+use App\Models\TransactionItem;
 use Illuminate\Support\Facades\Auth;
 
 class StockHistoryController extends Controller
@@ -42,24 +44,41 @@ class StockHistoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreStockHistoryRequest $request)
+    public function store(StoreTransaction_itemRequest $request)
     {
+        $request->validated();
 
-        $item = Item::findOrFail($request->item_id);
-        $item->update([
-            'current_stock' => $item->current_stock + $request->qty,
-        ]);
-        $stockHistory = StockHistory::create([
-            ...$request->validated(),
-            'type' => 'in',
-            'note' => 'Stock Masuk',
+        // ambil item
+        $item = Item::findOrFail($request->items_id);
+
+        // jika item stock tidak mencukupi dari request qty maka tampilkan error
+        if ($item->current_stock < $request->qty) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stok tidak mencukupi',
+            ]);
+        }
+
+        // buat stock history
+        StockHistory::create([
+            'item_id' => $request->items_id,   // <-- diganti dari 'items_id' jadi 'item_id'
+            'qty' => $request->qty,
+            'type' => 'out',
+            'note' => 'Stock Keluar',
             'user_id' => Auth::id(),
         ]);
 
+        // jika ada kurangi
+        $item->update([
+            'current_stock' => $item->current_stock - $request->qty,
+        ]);
+
+        $transactionItem = TransactionItem::create($request->validated());
+
         return response()->json([
             'success' => true,
-            'message' => 'Data StockHistory Berhasil Ditambahkan',
-            'data' => new StockHistoryResource($stockHistory),
+            'message' => 'Data TransactionItem Ditemukan',
+            'data' => new ItemTransactionResource($transactionItem),
         ]);
     }
 

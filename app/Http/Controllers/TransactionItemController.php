@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTransaction_itemRequest;
-use App\Models\TransactionItem;
 use App\Http\Requests\UpdateTransaction_itemRequest;
 use App\Http\Resources\ItemTransactionResource;
+use App\Models\Employes;
 use App\Models\Item;
 use App\Models\StockHistory;
+use App\Models\TransactionItem;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionItemController extends Controller
@@ -18,10 +19,11 @@ class TransactionItemController extends Controller
     public function index()
     {
         $transactionItem = TransactionItem::with('transaction', 'item')->latest()->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
-            'data' => ItemTransactionResource::collection($transactionItem)
+            'data' => ItemTransactionResource::collection($transactionItem),
         ]);
     }
 
@@ -44,6 +46,8 @@ class TransactionItemController extends Controller
         // ambil item
         $item = Item::findOrFail($request->items_id);
 
+
+
         // jika item stock tidak mencukupi dari request qty maka tampilkan error
         if ($item->current_stock < $request->qty) {
             return response()->json([
@@ -52,27 +56,28 @@ class TransactionItemController extends Controller
             ]);
         }
 
-        // buat stock history
         StockHistory::create([
-            'items_id' => $request->items_id,
+            'item_id' => $request->items_id,
             'qty' => $request->qty,
             'type' => 'out',
-            'note' => 'Stock Keluar',
-            'user_id' => Auth::id()
+            'note' => $request->note,
+            'user_id' => Auth::id(),
+            'date' => $request->date, // <- ini yang kelewat
         ]);
 
         // jika ada kurangi
         $item->update([
-            'current_stock' => $item->current_stock - $request->qty
+            'current_stock' => $item->current_stock - $request->qty,
         ]);
         
+
 
         $transactionItem = TransactionItem::create($request->validated());
 
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
-            'data' => new ItemTransactionResource($transactionItem)
+            'data' => new ItemTransactionResource($transactionItem),
         ]);
     }
 
@@ -82,10 +87,11 @@ class TransactionItemController extends Controller
     public function show(TransactionItem $transactionItem)
     {
         $transactionItem->load('transaction', 'item');
+
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
-            'data' => new ItemTransactionResource($transactionItem)
+            'data' => new ItemTransactionResource($transactionItem),
         ]);
     }
 
@@ -113,7 +119,7 @@ class TransactionItemController extends Controller
 
         $diffrence = $newQty - $oldqty;
 
-        if ($diffrence > 0) {   
+        if ($diffrence > 0) {
             if ($item->current_stock < $diffrence) {
                 return response()->json([
                     'success' => false,
@@ -121,11 +127,11 @@ class TransactionItemController extends Controller
                 ], 422);
             }
             $item->update([
-                'current_stock' => $item->current_stock - $diffrence   
+                'current_stock' => $item->current_stock - $diffrence,
             ]);
         } else {
             $item->update([
-                'current_stock' => $item->current_stock + abs($diffrence)
+                'current_stock' => $item->current_stock + abs($diffrence),
             ]);
         }
 
@@ -134,15 +140,17 @@ class TransactionItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Berhasil Diubah',
-            'data' => new ItemTransactionResource($transactionItem)
+            'data' => new ItemTransactionResource($transactionItem),
         ]);
     }
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(TransactionItem $transactionItem)
     {
         $transactionItem->delete();
+
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Berhasil Dihapus',

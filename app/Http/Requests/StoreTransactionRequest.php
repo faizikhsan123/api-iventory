@@ -25,6 +25,7 @@ class StoreTransactionRequest extends FormRequest
         return [
             'employes_id' => 'required|exists:employes,id',
             'note' => 'nullable|string|max:200|min:4',
+            'date' => 'required|date_format:Y-m-d',
         ];
     }
 }

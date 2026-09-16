@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransaction_itemRequest;
 use App\Http\Requests\UpdateTransaction_itemRequest;
 use App\Http\Resources\ItemTransactionResource;
-use App\Models\Employes;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
@@ -40,44 +39,38 @@ class TransactionItemController extends Controller
      */
     public function store(StoreTransaction_itemRequest $request)
     {
+        $validated = $request->validated();
 
-        $request->validated();
+        $item = Item::findOrFail($validated['items_id']);
 
-        // ambil item
-        $item = Item::findOrFail($request->items_id);
-
-
-
-        // jika item stock tidak mencukupi dari request qty maka tampilkan error
-        if ($item->current_stock < $request->qty) {
+        if ($item->current_stock < $validated['qty']) {
             return response()->json([
                 'success' => false,
                 'message' => 'Stok tidak mencukupi',
-            ]);
+            ], 422);
         }
 
+        $transactionItem = TransactionItem::create([
+            'transactions_id' => $validated['transactions_id'],
+            'items_id' => $validated['items_id'],
+            'qty' => $validated['qty'],
+        ]);
+
+        $item->decrement('current_stock', $validated['qty']);
+
         StockHistory::create([
-            'item_id' => $request->items_id,
-            'qty' => $request->qty,
+            'item_id' => $validated['items_id'],
+            'qty' => $validated['qty'],
             'type' => 'out',
-            'note' => $request->note,
+            'note' => $request->input('note'),
             'user_id' => Auth::id(),
-            'date' => $request->date, // <- ini yang kelewat
+            'date' => $request->input('date') ?? now()->toDateString(),
         ]);
-
-        // jika ada kurangi
-        $item->update([
-            'current_stock' => $item->current_stock - $request->qty,
-        ]);
-        
-
-
-        $transactionItem = TransactionItem::create($request->validated());
 
         return response()->json([
             'success' => true,
-            'message' => 'Data TransactionItem Ditemukan',
-            'data' => new ItemTransactionResource($transactionItem),
+            'message' => 'Item berhasil ditambahkan',
+            'data' => new ItemTransactionResource($transactionItem->load('item', 'transaction')),
         ]);
     }
 

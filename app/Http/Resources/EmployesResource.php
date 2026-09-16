@@ -19,9 +19,20 @@ class EmployesResource extends JsonResource
             'division' => $this->division,
             'position' => $this->position,
             'status' => $this->status,
-            'given_items_count' => (int) ($this->given_items_count ?? 0),
-            'user_id' => new UserResource($this->whenLoaded('user')),
-        
+            'user' => $this->whenLoaded('user'),
+            'given_items_count' => $this->given_items_count ?? 0,
+
+            // ambil dari transactionItems yang udah di-eager load, mapping tiap barisnya jadi format sendiri
+            'items' => $this->whenLoaded('transactionItems', function () {
+                return $this->transactionItems->map(function ($ti) {
+                    return [
+                        'item_name' => $ti->item->name ?? null,      // dari relasi .item
+                        'qty' => $ti->qty,
+                        'date' => $ti->transaction->date ?? null,     // dari relasi .transaction
+                        'note' => $ti->transaction->note ?? null,
+                    ];
+                })->values();
+            }),
         ];
     }
 }

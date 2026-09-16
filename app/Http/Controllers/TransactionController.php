@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Http\Resources\TransactionResource;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Transaction;
 
 class TransactionController extends Controller
 {
@@ -20,7 +19,7 @@ class TransactionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data Transaksi Ditemukan',
-            'data' => TransactionResource::collection($Transaksii)
+            'data' => TransactionResource::collection($Transaksii),
         ]);
     }
 
@@ -37,24 +36,18 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
-        $transactionNumber = 'TRX-' . str_pad(
-            Transaction::count() + 1,
-            5,
-            '0',
-            STR_PAD_LEFT
-        );
-
-        $transaksi = Transaction::create([
-            ...$request->validated(),
-            'transaction_number' => $transactionNumber,
-
+        $transaction = Transaction::create([
+            'transaction_number' => 'TRX-'.strtoupper(uniqid()),
+            'date' => $request->date,
+            'employes_id' => $request->employes_id,
+            'note' => $request->note,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Data Transaksi Berhasil Ditambahkan',
-            'data' => new TransactionResource($transaksi)
-        ], 201);
+            'message' => 'Transaksi berhasil dibuat',
+            'data' => $transaction,
+        ]);
     }
 
     /**
@@ -63,10 +56,11 @@ class TransactionController extends Controller
     public function show(Transaction $transaction)
     {
         $transaction->load('employes');
+
         return response()->json([
             'success' => true,
             'message' => 'Data Transaksi Ditemukan',
-            'data' => new TransactionResource($transaction)
+            'data' => new TransactionResource($transaction),
         ]);
     }
 
@@ -81,10 +75,11 @@ class TransactionController extends Controller
     public function update(UpdateTransactionRequest $request, Transaction $transaction)
     {
         $transaction->update($request->validated());
+
         return response()->json([
             'success' => true,
             'message' => 'Data Transaksi Berhasil Diubah',
-            'data' => new TransactionResource($transaction)
+            'data' => new TransactionResource($transaction),
         ]);
     }
 
@@ -94,9 +89,10 @@ class TransactionController extends Controller
     public function destroy(Transaction $transaction)
     {
         $transaction->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Data Transaksi Berhasil Dihapus'
+            'message' => 'Data Transaksi Berhasil Dihapus',
         ]);
     }
 }

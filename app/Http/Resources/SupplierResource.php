@@ -20,7 +20,7 @@ class SupplierResource extends JsonResource
             'phone' => $this->phone,
             'email' => $this->email,
             'address' => $this->address,
-            'status' => $this->status
+            'status' => $this->status,
         ];
     }
 }

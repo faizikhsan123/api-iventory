@@ -21,7 +21,7 @@ class ItemFactory extends Factory
         return [
             'name' => fake()->words(3, true),
 
-            'part_number' => 'ITM-' . fake()->unique()->numberBetween(100000, 999999),
+            'part_number' => 'ITM-'.fake()->unique()->numberBetween(100000, 999999),
 
             'file' => null,
 
@@ -56,7 +56,7 @@ class ItemFactory extends Factory
                 'l',
                 'xl',
                 'xxl',
-                'universal'
+                'universal',
             ]),
 
             'unit' => fake()->randomElement([

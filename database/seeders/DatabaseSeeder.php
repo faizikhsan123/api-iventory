@@ -21,15 +21,15 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
-        $this->call([
-            SupplierSeeder::class,
-            EmployesSeeder::class,
-            ItemSeeder::class,
-            TransactionSeeder::class,
-            TransactionItemSeeder::class,
-            ActivitySeeder::class,
-            StockHistorySeeder::class
-   
-        ]);
+        // $this->call([
+        //     SupplierSeeder::class,
+        //     EmployesSeeder::class,
+        //     ItemSeeder::class,
+        //     TransactionSeeder::class,
+        //     TransactionItemSeeder::class,
+        //     ActivitySeeder::class,
+        //     StockHistorySeeder::class
+
+        // ]);
     }
 }

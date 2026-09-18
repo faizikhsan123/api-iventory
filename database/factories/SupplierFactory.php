@@ -20,7 +20,7 @@ class SupplierFactory extends Factory
         return [
             'name' => fake()->company(),
             'phone' => fake()->phoneNumber(),
-            'address' => fake()->address(),
+            'address' => fake()->address('20'),
             'email' => fake()->email(),
             'status' => fake()->randomElement(['active', 'inactive'])
         ];

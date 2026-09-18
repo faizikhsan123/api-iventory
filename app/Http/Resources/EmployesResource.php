@@ -22,16 +22,23 @@ class EmployesResource extends JsonResource
             'user' => $this->whenLoaded('user'),
             'given_items_count' => $this->given_items_count ?? 0,
 
-            // ambil dari transactionItems yang udah di-eager load, mapping tiap barisnya jadi format sendiri
             'items' => $this->whenLoaded('transactionItems', function () {
-                return $this->transactionItems->map(function ($ti) {
-                    return [
-                        'item_name' => $ti->item->name ?? null,      // dari relasi .item
-                        'qty' => $ti->qty,
-                        'date' => $ti->transaction->date ?? null,     // dari relasi .transaction
-                        'note' => $ti->transaction->note ?? null,
-                    ];
-                })->values();
+                return $this->transactionItems
+                    ->groupBy('transactions_id')   // FK ke transaction, sesuaikan nama kolomnya
+                    ->map(function ($group) {
+                        $transaction = $group->first()->transaction;
+                        return [
+                            'transaction_id' => $transaction->id ?? null,
+                            'date' => $transaction->date ?? null,
+                            'note' => $transaction->note ?? null,
+                            'items' => $group->map(function ($ti) {
+                                return [
+                                    'item_name' => $ti->item->name ?? null,
+                                    'qty' => $ti->qty,
+                                ];
+                            })->values(),
+                        ];
+                    })->values();
             }),
         ];
     }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Requests;
+
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,15 +24,15 @@ class UpdateSupplierRequest extends FormRequest
     {
         return [
             'name' => 'required|string|min:4|max:50',
-'phone' => 'nullable|string|min:8|max:15',
-'email' => [
+            'phone' => 'nullable|string|min:8|max:15',
+            'email' => [
                 'nullable',
                 'email:dns,rfc',
                 'max:50',
                 Rule::unique('suppliers', 'email')->ignore($this->route('supplier')),
             ],
-'address' => 'nullable|string|min:3|max:200',
-'status' => 'required|in:active,inactive',
+            'address' => 'nullable|string|min:3|max:200',
+            'status' => 'required|in:active,inactive',
         ];
     }
 }

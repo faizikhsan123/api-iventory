@@ -8,6 +8,7 @@ use App\Http\Resources\EmployesResource;
 use App\Models\Activity;
 use App\Models\Employes;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class EmployesController extends Controller
@@ -15,21 +16,47 @@ class EmployesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $employes = Employes::with([
-            'user',
-            'transactionItems.item',
-            'transactionItems.transaction',
-        ])
-            ->withSum('transactionItems as given_items_count', 'qty')
-            ->latest()
-            ->get();
+        $perPage = max(1, min(
+            $request->integer('per_page', 10),
+            100
+        ));
+
+        $query = Employes::query()
+            ->with([
+                'user',
+                'transactionItems.item',
+                'transactionItems.transaction',
+            ])
+            ->withSum('transactionItems as given_items_count', 'qty');
+
+        // filter search nama
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%'.$request->input('search').'%');
+        }
+
+        // filter division
+        if ($request->filled('division')) {
+            $query->where('division', $request->input('division'));
+        }
+        // filter position
+        if ($request->filled('position')) {
+            $query->where('position', $request->input('position'));
+        }
+
+        $employes = $query->latest()->paginate($perPage);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Data Employes Ditemukan',
             'data' => EmployesResource::collection($employes),
+            'meta' => [
+                'current_page' => $employes->currentPage(),
+                'last_page' => $employes->lastPage(),
+                'per_page' => $employes->perPage(),
+                'total' => $employes->total(),
+            ],
         ]);
     }
 

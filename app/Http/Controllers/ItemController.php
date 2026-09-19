@@ -2,26 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Http\Resources\ItemsResourcec;
 use App\Models\Activity;
+use App\Models\Item;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Mockery\Undefined;
 
 class ItemController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $Items = Item::latest()->get();
+        $perPage = max(1, min(
+            $request->integer('per_page', 10),
+            100
+        ));
+
+        $query = Item::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%'.$request->input('search').'%');
+
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+
+        }
+        $Items = $query->latest()->paginate($perPage);
+
         return response()->json([
             'success' => true,
             'message' => 'Data Itemm Ditemukan',
-            'data' => ItemsResourcec::collection($Items)
+            'data' => ItemsResourcec::collection($Items),
+            'meta' => [
+                'current_page' => $Items->currentPage(),
+                'last_page' => $Items->lastPage(),
+                'per_page' => $Items->perPage(),
+                'total' => $Items->total(),
+            ],
         ]);
     }
 
@@ -39,7 +62,7 @@ class ItemController extends Controller
     public function store(StoreItemRequest $request)
     {
         // Generate Part Number
-        $partNumber = 'ITM-' . str_pad(
+        $partNumber = 'ITM-'.str_pad(
             Item::count() + 1,
             6,
             '0',
@@ -55,19 +78,19 @@ class ItemController extends Controller
         $data = $request->validated();
 
         $items = Item::create([
-          
-           'name' => $data['name'],
-           'category' => $data['category'],
-           'brand' => $data['brand'],
-           'type' => $data['type'] ?? null,
-           'min_stock' => $data['min_stock'] ?? null,
-           'size' => $data['size'],
-           'unit' => $data['unit'],
-           'description' => $data['description'] ?? null,
+
+            'name' => $data['name'],
+            'category' => $data['category'],
+            'brand' => $data['brand'],
+            'type' => $data['type'] ?? null,
+            'min_stock' => $data['min_stock'] ?? null,
+            'size' => $data['size'],
+            'unit' => $data['unit'],
+            'description' => $data['description'] ?? null,
             'part_number' => $partNumber,
             'file' => $filePath,
             'current_stock' => 0,
-             'status' => 'out_of_stock',
+            'status' => 'out_of_stock',
         ]);
 
         Activity::create([
@@ -78,7 +101,7 @@ class ItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data Item Berhasil Ditambahkan',
-            'data' => new ItemsResourcec($items)
+            'data' => new ItemsResourcec($items),
         ], 201);
     }
 
@@ -90,7 +113,7 @@ class ItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data Item Ditemukan',
-            'data' => new ItemsResourcec($item)
+            'data' => new ItemsResourcec($item),
         ]);
     }
 
@@ -105,40 +128,40 @@ class ItemController extends Controller
     /**
      * Update the specified resource in storage.
      */
-   public function update(UpdateItemRequest $request, Item $item)
-{
-    $filePath = $item->file;
+    public function update(UpdateItemRequest $request, Item $item)
+    {
+        $filePath = $item->file;
 
-    if ($request->hasFile('file')) {
-      
-        $filePath = $request->file('file')->store('items', 'public');
+        if ($request->hasFile('file')) {
+
+            $filePath = $request->file('file')->store('items', 'public');
+        }
+
+        $data = $request->validated();
+
+        $item->update([
+            'name' => $data['name'],
+            'category' => $data['category'],
+            'brand' => $data['brand'],
+            'type' => $data['type'] ?? null,
+            'min_stock' => $data['min_stock'] ?? null,
+            'size' => $data['size'],
+            'unit' => $data['unit'],
+            'description' => $data['description'] ?? null,
+            'file' => $filePath,
+        ]);
+
+        Activity::create([
+            'user_id' => Auth::id(),
+            'activity' => "Update Item {$item->name}",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Item Berhasil Diubah',
+            'data' => new ItemsResourcec($item->fresh()), // fresh() biar ambil data terbaru
+        ]);
     }
-
-    $data = $request->validated();
-
-    $item->update([
-        'name' => $data['name'],
-        'category' => $data['category'],
-        'brand' => $data['brand'],
-        'type' => $data['type'] ?? null,
-        'min_stock' => $data['min_stock'] ?? null,
-        'size' => $data['size'],
-        'unit' => $data['unit'],
-        'description' => $data['description'] ?? null,
-        'file' => $filePath,
-    ]);
-
-    Activity::create([
-        'user_id' => Auth::id(),
-        'activity' => "Update Item {$item->name}",
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Data Item Berhasil Diubah',
-        'data' => new ItemsResourcec($item->fresh()) // fresh() biar ambil data terbaru
-    ]);
-}
 
     /**
      * Remove the specified resource from storage.
@@ -146,14 +169,14 @@ class ItemController extends Controller
     public function destroy(Item $item)
     {
         $item->delete();
-         Activity::create([
+        Activity::create([
             'user_id' => Auth::user()->id,
             'activity' => "delete Item {$item->name}",
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Data Item Berhasil Dihapus'
+            'message' => 'Data Item Berhasil Dihapus',
         ]);
     }
 }

@@ -43,4 +43,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // routes/api.php
     Route::post('/stock-out', [StockOutController::class, 'store']);
+
+    Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
 });

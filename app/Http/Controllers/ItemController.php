@@ -95,7 +95,10 @@ class ItemController extends Controller
 
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Add Item {$items->name}",
+            'activity' => 'Menambah Barang',
+            'detail' => "Barang {$data['name']} berhasil Ditambah",
+            'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([
@@ -152,8 +155,12 @@ class ItemController extends Controller
         ]);
 
         Activity::create([
-            'user_id' => Auth::id(),
-            'activity' => "Update Item {$item->name}",
+            'user_id' => Auth::user()->id,
+            'activity' => 'Merubah Data Barang',
+            'detail' => "Data Barang {$data['name']} Berhasil Dirubah",
+            'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
+
         ]);
 
         return response()->json([
@@ -171,7 +178,10 @@ class ItemController extends Controller
         $item->delete();
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "delete Item {$item->name}",
+            'activity' => 'Menghapus Barang',
+            'detail' => "Barang {$item['name']} berhasil Dihapus",
+             'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([

@@ -7,12 +7,10 @@ use App\Http\Resources\UserResource;
 use App\Models\Activity;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
     // Login user
     public function login(Request $request)
     {
@@ -26,7 +24,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         // Cek apakah user ada dan password bener
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Email atau password salah',
@@ -39,7 +37,10 @@ class AuthController extends Controller
         // Buat activity
         Activity::create([
             'user_id' => $user->id,
-            'activity' => "{$user['name']} login ",
+            'activity' => 'login ',
+            'detail' => 'Berhasil Login',
+            'type' => 'system',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([
@@ -48,15 +49,16 @@ class AuthController extends Controller
             'data' => [
                 'user' => new UserResource($user),
                 'token' => $token,
-            ]
+            ],
         ]);
     }
+
     public function me(Request $request)
     {
         return response()->json([
             'status' => 'success',
             'message' => 'datta berhasil dimabil ',
-            'data' => new UserResource($request->user())
+            'data' => new UserResource($request->user()),
         ]);
     }
 
@@ -68,12 +70,16 @@ class AuthController extends Controller
 
         // Buat activity
         Activity::create([
-            'user_id' => Auth::user()->id,
-            'activity' => "{$user['name']} logout ",
+            'user_id' => $user->id,
+            'activity' => ' logout ',
+            'detail' => 'Berhasil logout',
+            'type' => 'system',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
+
         return response()->json([
             'status' => 'success',
-            'message' => 'logout berhasil'
+            'message' => 'logout berhasil',
         ]);
     }
 }

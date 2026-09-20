@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransaction_itemRequest;
 use App\Http\Requests\UpdateTransaction_itemRequest;
 use App\Http\Resources\ItemTransactionResource;
+use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
@@ -65,6 +66,14 @@ class TransactionItemController extends Controller
             'note' => $request->input('note'),
             'user_id' => Auth::id(),
             'date' => $request->input('date') ?? now()->toDateString(),
+        ]);
+
+        Activity::create([
+            'user_id' => Auth::user()->id,
+            'activity' => 'Memberikan Barang',
+            'detail' => "Barang {$item['name']} Diberikan Sebanyak {$validated['qty']}",
+            'type' => 'stockout',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([

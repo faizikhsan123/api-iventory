@@ -89,10 +89,18 @@ class EmployesController extends Controller
             'status' => 'active',
         ]);
 
+        // Activity::create([
+        //     'user_id' => Auth::user()->id,
+        //     'activity' => " Add Employes {$employes['name']}",
+
+        // ]);
+
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => " Add Employes {$employes['name']}",
-
+            'activity' => 'Menambah Karyawan',
+            'detail' => " Karyawan {$data['name']} berhasil ditambahkan",
+            'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([
@@ -147,7 +155,10 @@ class EmployesController extends Controller
 
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "update employe {$employe->user->name}",
+            'activity' => 'Mengubah Data Karyawan',
+            'detail' => " Data Karyawan {$employe['name']} Berhasil Dirubah",
+            'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([
@@ -165,7 +176,10 @@ class EmployesController extends Controller
         $employe->delete();
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "delete employe {$employe['name']}",
+            'activity' => 'Menghapus Karyawan',
+            'detail' => "Karyawan {$employe['name']} Berhasil Dihapus",
+            'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([

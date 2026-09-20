@@ -16,7 +16,10 @@ class ActivityResource extends JsonResource
     {
         return [
             'activity' => $this->activity,
+            'detail' => $this->detail,
             'user_id' => new UserResource($this->whenLoaded('user')),
+            'date' => $this->date,
+            'type' => $this->type
         ];
     }
 }

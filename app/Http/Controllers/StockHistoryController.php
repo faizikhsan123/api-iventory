@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreStockInRequest;
 use App\Http\Requests\StoreTransaction_itemRequest;
 use App\Http\Requests\UpdateStockHistoryRequest;
 use App\Http\Resources\ItemTransactionResource;
 use App\Http\Resources\StockHistoryResource;
+use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockHistoryController extends Controller
 {
@@ -42,7 +45,7 @@ class StockHistoryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage. (Stock OUT — dipakai transaksi/karyawan)
      */
     public function store(StoreTransaction_itemRequest $request)
     {
@@ -79,6 +82,54 @@ class StockHistoryController extends Controller
             'success' => true,
             'message' => 'Data TransactionItem Ditemukan',
             'data' => new ItemTransactionResource($transactionItem),
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage. (Stock IN — penerimaan dari supplier, banyak item sekaligus)
+     */
+    public function storeIn(StoreStockInRequest $request)
+    {
+        $validated = $request->validated();
+
+        $createdHistories = DB::transaction(function () use ($validated) {
+            $histories = [];
+
+            foreach ($validated['items'] as $itemLine) {
+                $item = Item::findOrFail($itemLine['item_id']);
+
+                $stockHistory = StockHistory::create([
+                    'item_id' => $itemLine['item_id'],
+                    'supplier_id' => $validated['supplier_id'],
+                    'qty' => $itemLine['qty'],
+                    'type' => 'in',
+                    'note' => $validated['note'] ?? 'Stock Masuk',
+                    'date' => $validated['date'],
+                    'user_id' => Auth::id(),
+                ]);
+
+                $item->update([
+                    'current_stock' => $item->current_stock + $itemLine['qty'],
+                ]);
+
+                Activity::create([
+                    'user_id' => Auth::id(),
+                    'activity' => 'Menambah Stok Barang',
+                    'detail' => "Stok Barang {$item->name} bertambah {$itemLine['qty']} {$itemLine['unit']}",
+                    'type' => 'stockin',
+                    'date' => now()->format('d-m-Y H:i'),
+                ]);
+
+                $histories[] = $stockHistory->load('user', 'item', 'supplier');
+            }
+
+            return $histories;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Stock berhasil ditambahkan',
+            'data' => StockHistoryResource::collection(collect($createdHistories)),
         ]);
     }
 

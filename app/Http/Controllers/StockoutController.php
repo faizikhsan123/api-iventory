@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStockOutRequest;
+use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\Transaction;
@@ -29,7 +30,7 @@ class StockOutController extends Controller
 
         $transaction = DB::transaction(function () use ($validated) {
             $transaction = Transaction::create([
-                'transaction_number' => 'TRX-' . strtoupper(uniqid()),
+                'transaction_number' => 'TRX-'.strtoupper(uniqid()),
                 'date' => $validated['date'],
                 'employes_id' => $validated['employes_id'],
                 'note' => $validated['note'] ?? null,
@@ -54,6 +55,8 @@ class StockOutController extends Controller
                     'user_id' => Auth::id(),
                     'date' => $validated['date'],
                 ]);
+
+             
             }
 
             return $transaction;

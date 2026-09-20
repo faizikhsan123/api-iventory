@@ -89,7 +89,10 @@ class SupplierController extends Controller
 
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Add Supplier {$supplier->name}",
+            'activity' => 'Menambah Supplier',
+            'detail' => "Supplier {$data['name']} berhasil Ditambah",
+            'type' => '',
+            'date' => now()->format('d-m-Y H:i'),
         ]);
 
         return response()->json([
@@ -133,7 +136,8 @@ class SupplierController extends Controller
 
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Update Supplier {$supplier->name}",
+            'activity' => 'Merubah Data Supplier',
+            'detail' => "Data Supplier {$data['name']} Berhasil Dirubah",
         ]);
 
         return response()->json([
@@ -151,7 +155,8 @@ class SupplierController extends Controller
         $supplier->delete();
         Activity::create([
             'user_id' => Auth::user()->id,
-            'activity' => "Delete Supplier {$supplier->name}",
+            'activity' => 'Menghapus Supplier',
+            'detail' => "Supplier {$supplier['name']} Berhasil Dihapus",
         ]);
 
         return response()->json([

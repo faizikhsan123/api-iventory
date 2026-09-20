@@ -97,8 +97,8 @@ class ItemController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Menambah Barang',
             'detail' => "Barang {$data['name']} berhasil Ditambah",
-            'type' => '',
-            'date' => now()->format('d-m-Y H:i'),
+            'type' => null,
+            'date' => now()
         ]);
 
         return response()->json([
@@ -158,8 +158,8 @@ class ItemController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Merubah Data Barang',
             'detail' => "Data Barang {$data['name']} Berhasil Dirubah",
-            'type' => '',
-            'date' => now()->format('d-m-Y H:i'),
+            'type' => null,
+            'date' => now()
 
         ]);
 
@@ -180,8 +180,8 @@ class ItemController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Menghapus Barang',
             'detail' => "Barang {$item['name']} berhasil Dihapus",
-             'type' => '',
-            'date' => now()->format('d-m-Y H:i'),
+             'type' => null,
+            'date' => now()
         ]);
 
         return response()->json([

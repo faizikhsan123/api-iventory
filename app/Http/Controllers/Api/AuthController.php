@@ -40,7 +40,7 @@ class AuthController extends Controller
             'activity' => 'login ',
             'detail' => 'Berhasil Login',
             'type' => 'system',
-            'date' => now()->format('d-m-Y H:i'),
+            'date' => now(),
         ]);
 
         return response()->json([
@@ -74,7 +74,7 @@ class AuthController extends Controller
             'activity' => ' logout ',
             'detail' => 'Berhasil logout',
             'type' => 'system',
-            'date' => now()->format('d-m-Y H:i'),
+            'date' => now(),
         ]);
 
         return response()->json([

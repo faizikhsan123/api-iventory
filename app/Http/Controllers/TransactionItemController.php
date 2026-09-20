@@ -73,7 +73,7 @@ class TransactionItemController extends Controller
             'activity' => 'Memberikan Barang',
             'detail' => "Barang {$item['name']} Diberikan Sebanyak {$validated['qty']}",
             'type' => 'stockout',
-            'date' => now()->format('d-m-Y H:i'),
+            'date' => now()
         ]);
 
         return response()->json([

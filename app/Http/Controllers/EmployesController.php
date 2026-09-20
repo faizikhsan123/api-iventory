@@ -99,8 +99,8 @@ class EmployesController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Menambah Karyawan',
             'detail' => " Karyawan {$data['name']} berhasil ditambahkan",
-            'type' => '',
-            'date' => now()->format('d-m-Y H:i'),
+            'type' => null,
+            'date' => now()
         ]);
 
         return response()->json([
@@ -157,8 +157,8 @@ class EmployesController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Mengubah Data Karyawan',
             'detail' => " Data Karyawan {$employe['name']} Berhasil Dirubah",
-            'type' => '',
-            'date' => now()->format('d-m-Y H:i'),
+            'type' => null,
+            'date' => now()
         ]);
 
         return response()->json([
@@ -178,8 +178,8 @@ class EmployesController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Menghapus Karyawan',
             'detail' => "Karyawan {$employe['name']} Berhasil Dihapus",
-            'type' => '',
-            'date' => now()->format('d-m-Y H:i'),
+            'type' => null,
+            'date' => now()
         ]);
 
         return response()->json([

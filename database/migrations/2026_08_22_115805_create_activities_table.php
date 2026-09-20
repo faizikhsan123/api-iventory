@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('activity');
             $table->string('detail');
-            $table->date('date');
-            $table->enum('type', ['system', 'stockin', 'stockout']);
+            $table->dateTime('date');
+            $table->enum('type', ['system', 'stockin', 'stockout'])->nullable();
             $table->timestamps();
         });
     }

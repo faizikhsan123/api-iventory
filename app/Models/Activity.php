@@ -14,7 +14,8 @@ class Activity extends Model
         'user_id',
         'activity',
         'detail',
-        'date'
+        'date',
+        'type'
     ];
 
     public function user()

@@ -117,7 +117,7 @@ class StockHistoryController extends Controller
                     'activity' => 'Menambah Stok Barang',
                     'detail' => "Stok Barang {$item->name} bertambah {$itemLine['qty']} {$itemLine['unit']}",
                     'type' => 'stockin',
-                    'date' => now()->format('d-m-Y H:i'),
+                    'date' => now()
                 ]);
 
                 $histories[] = $stockHistory->load('user', 'item', 'supplier');

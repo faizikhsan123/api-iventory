@@ -9,10 +9,11 @@ use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionItemController;
-use App\Models\Activity;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/items/top-borrowed', [ItemController::class, 'topBorrowed']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -45,4 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stock-out', [StockOutController::class, 'store']);
 
     Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
+
+    
+
 });

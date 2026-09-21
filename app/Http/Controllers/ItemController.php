@@ -98,7 +98,7 @@ class ItemController extends Controller
             'activity' => 'Menambah Barang',
             'detail' => "Barang {$data['name']} berhasil Ditambah",
             'type' => null,
-            'date' => now()
+            'date' => now(),
         ]);
 
         return response()->json([
@@ -106,6 +106,29 @@ class ItemController extends Controller
             'message' => 'Data Item Berhasil Ditambahkan',
             'data' => new ItemsResourcec($items),
         ], 201);
+    } 
+
+    public function topBorrowed(Request $request)
+    {   
+        $start = $request->input('start', now()->startOfMonth());
+        $end = $request->input('end', now()->endOfMonth());
+
+        $data = Item::query()
+            ->withSum(['stock_history as total_pinjam' => function ($q) use ($start, $end) {
+                $q->where('type', 'out')->whereBetween('date', [$start, $end]);
+            }], 'qty')
+            ->having('total_pinjam', '>', 0)
+            ->orderByDesc('total_pinjam')
+            ->limit(10)
+            ->get()
+            ->values()
+            ->map(function ($item, $i) {
+                $item->total_pinjam = $item->total_pinjam ?? 0;
+                $item->rank = $i + 1;
+                return $item;
+            });
+
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     /**
@@ -159,7 +182,7 @@ class ItemController extends Controller
             'activity' => 'Merubah Data Barang',
             'detail' => "Data Barang {$data['name']} Berhasil Dirubah",
             'type' => null,
-            'date' => now()
+            'date' => now(),
 
         ]);
 
@@ -180,8 +203,8 @@ class ItemController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Menghapus Barang',
             'detail' => "Barang {$item['name']} berhasil Dihapus",
-             'type' => null,
-            'date' => now()
+            'type' => null,
+            'date' => now(),
         ]);
 
         return response()->json([

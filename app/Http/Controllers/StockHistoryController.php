@@ -23,8 +23,7 @@ class StockHistoryController extends Controller
     {
         $stockHistory = StockHistory::with([
             'user',
-            'item',
-            'supplier' => function ($query) {
+            'item.supplier' => function ($query) {
                 $query->where('status', 'active');
             },
         ])->latest()->get();
@@ -99,7 +98,7 @@ class StockHistoryController extends Controller
                 $item = Item::findOrFail($itemLine['item_id']);
 
                 $stockHistory = StockHistory::create([
-                    'item_id' => $itemLine['item_id'],
+                    'item_id' => $itemLine['ite m_id'],
                     'supplier_id' => $validated['supplier_id'],
                     'qty' => $itemLine['qty'],
                     'type' => 'in',
@@ -117,7 +116,7 @@ class StockHistoryController extends Controller
                     'activity' => 'Menambah Stok Barang',
                     'detail' => "Stok Barang {$item->name} bertambah {$itemLine['qty']} {$itemLine['unit']}",
                     'type' => 'stockin',
-                    'date' => now()
+                    'date' => now(),
                 ]);
 
                 $histories[] = $stockHistory->load('user', 'item', 'supplier');

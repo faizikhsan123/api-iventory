@@ -15,13 +15,14 @@ class TransactionItem extends Model
         'qty',
     ];
 
-    public function item()
-    {
-        return $this->belongsTo(Item::class, 'items_id');
-    }
-
+    // app/Models/TransactionItem.php
     public function transaction()
     {
         return $this->belongsTo(Transaction::class, 'transactions_id');
+    }
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'items_id');
     }
 }

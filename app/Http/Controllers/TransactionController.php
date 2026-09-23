@@ -6,34 +6,42 @@ use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
+use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $Transaksii = Transaction::with('employes')->latest()->get();
+        $query = Transaction::with(['employes.user', 'transaction_items.item']);
+
+        if ($request->filled('start')) {
+            $query->whereDate('date', '>=', $request->input('start'));
+        }
+
+        if ($request->filled('end')) {
+            $query->whereDate('date', '<=', $request->input('end'));
+        }
+
+        $transactions = $query->latest()->paginate($request->per_page ?? 10);
 
         return response()->json([
             'success' => true,
             'message' => 'Data Transaksi Ditemukan',
-            'data' => TransactionResource::collection($Transaksii),
+            'data' => TransactionResource::collection($transactions),
+            'meta' => [
+                'current_page' => $transactions->currentPage(),
+                'last_page' => $transactions->lastPage(),
+                'per_page' => $transactions->perPage(),
+                'total' => $transactions->total(),
+            ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreTransactionRequest $request)
     {
         $transaction = Transaction::create([
@@ -43,19 +51,18 @@ class TransactionController extends Controller
             'note' => $request->note,
         ]);
 
+        $transaction->load(['employes.user', 'transaction_items.item']);
+
         return response()->json([
             'success' => true,
             'message' => 'Transaksi berhasil dibuat',
-            'data' => $transaction,
+            'data' => new TransactionResource($transaction),
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Transaction $transaction)
     {
-        $transaction->load('employes');
+        $transaction->load(['employes.user', 'transaction_items.item']);
 
         return response()->json([
             'success' => true,
@@ -64,17 +71,12 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Transaction $transaction) {}
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateTransactionRequest $request, Transaction $transaction)
     {
         $transaction->update($request->validated());
+        $transaction->load(['employes.user', 'transaction_items.item']);
 
         return response()->json([
             'success' => true,
@@ -83,9 +85,6 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Transaction $transaction)
     {
         $transaction->delete();

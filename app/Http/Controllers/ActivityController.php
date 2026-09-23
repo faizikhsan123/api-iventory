@@ -32,6 +32,15 @@ class ActivityController extends Controller
             // code...
         }
 
+        if ($request->filled('start')) {
+            $query->whereDate('date', '>=', $request->input('start'));
+            # code...
+        }
+        if ($request->filled('end')) {
+            $query->whereDate('date', '<=', $request->input('end'));
+            # code...
+        }
+
         $activity = $query->latest()->paginate($perPage);
 
         return response()->json([

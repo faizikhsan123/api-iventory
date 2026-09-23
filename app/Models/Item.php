@@ -33,4 +33,5 @@ class Item extends Model
     public function stock_history(){
         return $this->hasMany(StockHistory::class);
     }
+    
 }

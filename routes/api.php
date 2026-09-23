@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployesController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\StockHistoryController;
@@ -11,7 +12,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionItemController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);    
 
 Route::get('/items/top-borrowed', [ItemController::class, 'topBorrowed']);
 
@@ -27,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // employees
     Route::apiResource('employes', EmployesController::class);
 
+    Route::get('/items/low-stock', [ItemController::class, 'lowStock']);
     // items
     Route::apiResource('items', ItemController::class);
 
@@ -47,6 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
 
-    
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
 });

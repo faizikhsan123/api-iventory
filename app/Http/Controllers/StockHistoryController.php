@@ -11,6 +11,7 @@ use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -19,19 +20,32 @@ class StockHistoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $stockHistory = StockHistory::with([
-            'user',
-            'item.supplier' => function ($query) {
-                $query->where('status', 'active');
-            },
-        ])->latest()->get();
+        $perPage = max(1, min($request->integer('per_page', 10), 100));
+
+        $query = StockHistory::with(['item', 'supplier', 'user']);
+
+        if ($request->filled('start')) {
+            $query->whereDate('date', '>=', $request->input('start'));
+        }
+
+        if ($request->filled('end')) {
+            $query->whereDate('date', '<=', $request->input('end'));
+        }
+
+        $Stockhistory = $query->latest()->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'message' => 'Data StockHistory Ditemukan',
-            'data' => StockHistoryResource::collection($stockHistory),
+            'data' => StockHistoryResource::collection($Stockhistory),
+            'meta' => [
+                'current_page' => $Stockhistory->currentPage(),
+                'last_page' => $Stockhistory->lastPage(),
+                'per_page' => $Stockhistory->perPage(),
+                'total' => $Stockhistory->total(),
+            ],
         ]);
     }
 
@@ -98,7 +112,7 @@ class StockHistoryController extends Controller
                 $item = Item::findOrFail($itemLine['item_id']);
 
                 $stockHistory = StockHistory::create([
-                    'item_id' => $itemLine['ite m_id'],
+                    'item_id' => $itemLine['item_id'],
                     'supplier_id' => $validated['supplier_id'],
                     'qty' => $itemLine['qty'],
                     'type' => 'in',

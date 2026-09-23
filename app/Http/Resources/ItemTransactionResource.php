@@ -17,7 +17,7 @@ class ItemTransactionResource extends JsonResource
         return [
             'id' => $this->id,
             'qty' => $this->qty,
-            'transactions_id' => new TransactionResource($this->whenLoaded('transaction')),
+            'transactions_id' => JsonResource::make($this->whenLoaded('transaction')),
             'items_id' => new ItemsResourcec($this->whenLoaded('item')),
         ];
     }

@@ -25,21 +25,27 @@ Route::middleware('auth:sanctum')->group(function () {
     // suppliers
     Route::apiResource('suppliers', SupplierController::class);
 
+    Route::get('/employes/{employe}/detail', [EmployesController::class, 'detail']);
+
     // employees
     Route::apiResource('employes', EmployesController::class);
 
     Route::get('/items/low-stock', [ItemController::class, 'lowStock']);
+
+    Route::get('/items/{item}/detail', [ItemController::class, 'detail']);
     // items
     Route::apiResource('items', ItemController::class);
 
     // transactions
     Route::apiResource('transactions', TransactionController::class);
-
+   
     // transaction items
     Route::apiResource('transaction-items', TransactionItemController::class);
 
     // Activity
     Route::apiResource('activities', ActivityController::class);
+
+    Route::get('/stock-history/trend', [StockHistoryController::class, 'trend']);
 
     // stock history
     Route::apiResource('stock-history', StockHistoryController::class);
@@ -50,5 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
 
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+
+
+    
 
 });

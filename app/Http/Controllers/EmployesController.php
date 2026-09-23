@@ -68,6 +68,45 @@ class EmployesController extends Controller
         //
     }
 
+    public function detail(Employes $employe)
+    {
+        $employe->load('user');
+
+        // ambil transaction_items langsung lewat relasi hasManyThrough,
+        // sekalian load transaction & item-nya biar dapet nomor transaksi + nama barang
+        $transactionItems = $employe->transactionItems()
+            ->with(['transaction', 'item'])
+            ->latest('id') // urutkan berdasarkan tanggal transaksi
+            ->get();
+
+        $totalBarang = $transactionItems->sum('qty');
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'employe' => [
+                    'id' => $employe->id,
+                    'name' => $employe->user->name ?? '-',
+                    'division' => $employe->division,
+                    'position' => $employe->position,
+                    'status' => $employe->status,
+                ],
+                'statistik' => [
+                    'total_barang_diterima' => (int) $totalBarang,
+                ],
+                'riwayat_diberikan' => $transactionItems->map(function ($ti) {
+                    return [
+                        'transaction_number' => $ti->transaction->transaction_number ?? '-',
+                        'date' => $ti->transaction->date ?? '-',
+                        'barang' => $ti->item->name ?? '-',
+                        'qty' => $ti->qty,
+                        'note' => $ti->transaction->note ?? null,
+                    ];
+                }),
+            ],
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -100,7 +139,7 @@ class EmployesController extends Controller
             'activity' => 'Menambah Karyawan',
             'detail' => " Karyawan {$data['name']} berhasil ditambahkan",
             'type' => null,
-            'date' => now()
+            'date' => now(),
         ]);
 
         return response()->json([
@@ -158,7 +197,7 @@ class EmployesController extends Controller
             'activity' => 'Mengubah Data Karyawan',
             'detail' => " Data Karyawan {$employe['name']} Berhasil Dirubah",
             'type' => null,
-            'date' => now()
+            'date' => now(),
         ]);
 
         return response()->json([
@@ -179,7 +218,7 @@ class EmployesController extends Controller
             'activity' => 'Menghapus Karyawan',
             'detail' => "Karyawan {$employe['name']} Berhasil Dihapus",
             'type' => null,
-            'date' => now()
+            'date' => now(),
         ]);
 
         return response()->json([

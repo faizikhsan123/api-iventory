@@ -146,6 +146,50 @@ class StockHistoryController extends Controller
         ]);
     }
 
+    public function trend(Request $request)
+    {
+        // ambil 6 bulan terakhir (termasuk bulan ini)
+        $bulanAwal = now()->subMonths(5)->startOfMonth();
+
+        $data = StockHistory::selectRaw("
+            DATE_FORMAT(date, '%Y-%m') as bulan,
+            SUM(CASE WHEN type = 'in' THEN qty ELSE 0 END) as stock_masuk,
+            SUM(CASE WHEN type = 'out' THEN qty ELSE 0 END) as stock_keluar
+        ")
+            ->where('date', '>=', $bulanAwal)
+            ->groupBy('bulan')
+            ->orderBy('bulan')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    public function categoryDistribution(Request $request)
+    {
+        $data = StockHistory::join('items', 'stock_histories.item_id', '=', 'items.id')
+            ->selectRaw('items.category, SUM(stock_histories.qty) as total')
+            ->groupBy('items.category')
+            ->get();
+
+        $grandTotal = $data->sum('total');
+
+        $result = $data->map(function ($row) use ($grandTotal) {
+            return [
+                'category' => $row->category,
+                'total' => (int) $row->total,
+                'percentage' => $grandTotal > 0 ? round(($row->total / $grandTotal) * 100) : 0,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
+        ]);
+    }
+
     /**
      * Display the specified resource.
      */

@@ -13,6 +13,7 @@ class Employes extends Model
 
     protected $fillable = [
         'user_id',
+        'file',
         'transactions_id',
         'division',
         'position',

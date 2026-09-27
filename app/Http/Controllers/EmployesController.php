@@ -72,11 +72,9 @@ class EmployesController extends Controller
     {
         $employe->load('user');
 
-        // ambil transaction_items langsung lewat relasi hasManyThrough,
-        // sekalian load transaction & item-nya biar dapet nomor transaksi + nama barang
         $transactionItems = $employe->transactionItems()
             ->with(['transaction', 'item'])
-            ->latest('id') // urutkan berdasarkan tanggal transaksi
+            ->latest('id')
             ->get();
 
         $totalBarang = $transactionItems->sum('qty');
@@ -87,6 +85,7 @@ class EmployesController extends Controller
                 'employe' => [
                     'id' => $employe->id,
                     'name' => $employe->user->name ?? '-',
+                    'file' => $employe->file,        // <-- tambahin ini
                     'division' => $employe->division,
                     'position' => $employe->position,
                     'status' => $employe->status,
@@ -115,6 +114,12 @@ class EmployesController extends Controller
         // data ini darri request
         $data = $request->validated();
 
+        $filePath = null;
+
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('employees', 'public');
+        }
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -123,6 +128,7 @@ class EmployesController extends Controller
 
         $employes = Employes::create([
             'user_id' => $user->id,
+            'file' => $filePath,
             'division' => $data['division'],
             'position' => $data['position'],
             'status' => 'active',
@@ -179,17 +185,25 @@ class EmployesController extends Controller
     public function update(UpdateEmployesRequest $request, Employes $employe)
     {
         $validated = $request->validated();
+        $filePath = $employe->file;
+
+        if ($request->hasFile('file')) {
+
+            $filePath = $request->file('file')->store('items', 'public');
+        }
 
         $employe->update([
+            'file' => $filePath ?? null,
             'division' => $validated['division'],
             'position' => $validated['position'],
-            'status' => $validated['status'],
+            'status' => $validated['status'],   
         ]);
 
         $employe->user()->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
+
+            // 'password' => bcrypt($validated['password']),
         ]);
 
         Activity::create([

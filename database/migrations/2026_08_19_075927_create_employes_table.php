@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('employes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-          
+            $table->string('file')->nullable();
+
             $table->enum('division', [
                 'GA',
                 'INC-PMR',

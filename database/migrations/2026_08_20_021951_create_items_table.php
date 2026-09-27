@@ -17,20 +17,22 @@ return new class extends Migration
             $table->string('file')->nullable();
             $table->string('name');
             $table->enum('category', ['apd','tools'])->default('apd');
-            $table->string('brand');
+            $table->string('brand')->nullable();
             $table->string('type')->nullable();
-            $table->enum('size', [
-                's',
-                'm',
-                'l',
-                'xl',
-                'xxl',
-                'universal'])->nullable();
+            $table->string('size')->nullable();
+            // $table->string('size', [
+            //     's',
+            //     'm',
+            //     'l',
+            //     'xl',
+            //     'xxl',
+            //     'universal'])->nullable();
             $table->enum('unit', ['pcs', 'set', 'unit', 'pair'])->default('pcs');
             $table->integer('min_stock')->nullable();
             $table->integer('current_stock')->nullable();
             $table->enum('status', ['available', 'low_stock', 'out_of_stock'])->default('available')->nullable();
             $table->text('description')->nullable();
+            $table->string('price')->nullable();
             $table->timestamps();
         });
     }

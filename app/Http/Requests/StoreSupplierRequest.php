@@ -24,6 +24,8 @@ class StoreSupplierRequest extends FormRequest
     {
         return [
             'name' => 'required|string|min:4|max:50',
+            'pic' => 'required|string|min:2|max:50',
+            'spesialis' => 'required|string|min:2|max:50',
             'phone' => 'nullable|string|min:8|max:15',
             'email' => 'nullable|email:rfc,dns|unique:suppliers,email',
             'address' => 'nullable|string|min:3|max:200',

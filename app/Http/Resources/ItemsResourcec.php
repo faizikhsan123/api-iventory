@@ -27,6 +27,7 @@ class ItemsResourcec extends JsonResource
             'min_stock' => $this->min_stock,
             'current_stock' => $this->current_stock,
             'status' => $this->status,
+            'price' => $this->price,
             'description' => $this->description,
         ];
     }

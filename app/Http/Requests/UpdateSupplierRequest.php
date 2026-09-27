@@ -23,7 +23,9 @@ class UpdateSupplierRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|min:4|max:50',
+            'name' => 'required|string|min:4|max:50',   
+            'pic' => 'required|string|min:2|max:50',
+            'spesialis' => 'required|string|min:2|max:50',
             'phone' => 'nullable|string|min:8|max:15',
             'email' => [
                 'nullable',

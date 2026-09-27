@@ -23,6 +23,7 @@ class Item extends Model
         'status',
         'min_stock',
         'description',
+        'price'
     ];
 
     public function transaction_items()

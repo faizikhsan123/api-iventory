@@ -178,14 +178,15 @@ class ItemController extends Controller
 
             'name' => $data['name'],
             'category' => $data['category'],
-            'brand' => $data['brand'],
+            'brand' => $data['brand'] ?? null,
             'type' => $data['type'] ?? null,
             'min_stock' => $data['min_stock'] ?? null,
-            'size' => $data['size'],
+            'size' => $data['size'] ?? null,
             'unit' => $data['unit'],
+            'price' => $data['price'] ?? null,
             'description' => $data['description'] ?? null,
             'part_number' => $partNumber,
-            'file' => $filePath,
+            'file' => $filePath ??null,
             'current_stock' => 0,
             'status' => 'out_of_stock',
         ]);
@@ -272,12 +273,13 @@ class ItemController extends Controller
 
         $item->update([
             'name' => $data['name'],
-            'category' => $data['category'],
-            'brand' => $data['brand'],
+            'category' => $data['category'] ?? null,
+            'brand' => $data['brand'] ?? null,
             'type' => $data['type'] ?? null,
             'min_stock' => $data['min_stock'] ?? null,
-            'size' => $data['size'],
+            'size' => $data['size'] ?? null,
             'unit' => $data['unit'],
+            'price' => $data['price'] ?? null,
             'description' => $data['description'] ?? null,
             'file' => $filePath,
         ]);

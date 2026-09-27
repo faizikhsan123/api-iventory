@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,8 +19,8 @@ class ActivityResource extends JsonResource
             'activity' => $this->activity,
             'detail' => $this->detail,
             'user_id' => new UserResource($this->whenLoaded('user')),
-            'date' => $this->date,
-            'type' => $this->type
+            'date' => Carbon::parse($this->date)->translatedFormat('d F Y'),
+            'type' => $this->type,
         ];
     }
 }

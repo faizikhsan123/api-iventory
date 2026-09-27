@@ -81,6 +81,8 @@ class SupplierController extends Controller
 
         $supplier = Supplier::create([
             'name' => $data['name'],
+            'pic' => $data['pic'],
+            'spesialis' => $data['spesialis'],
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
             'address' => $data['address'] ?? null,
@@ -128,6 +130,8 @@ class SupplierController extends Controller
 
         $supplier->update([
             'name' => $data['name'],
+            'pic' => $data['pic'],
+            'spesialis' => $data['spesialis'],
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
             'address' => $data['address'] ?? null,

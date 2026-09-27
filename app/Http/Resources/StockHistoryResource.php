@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +19,7 @@ class StockHistoryResource extends JsonResource
             'qty' => $this->qty,
             'type' => $this->type,
             'note' => $this->note,
-            'date' => $this->date,
+             'date' => Carbon::parse($this->date)->translatedFormat('d F Y'),
             'user_id' => new UserResource($this->whenLoaded('user')),
             'item_id' => new ItemsResourcec($this->whenLoaded('item')),
             'supplier_id' => new SupplierResource($this->whenLoaded('supplier')),

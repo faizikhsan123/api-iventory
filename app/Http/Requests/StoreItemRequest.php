@@ -23,14 +23,15 @@ class StoreItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
+            'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120',
             'name' => 'required|max:50',
             'category' => 'required|in:apd,tools',
-            'brand' => 'required|max:20',
+            'brand' => 'nullable|max:20',
             'type' => 'nullable|max:20|string',
             'min_stock' => 'nullable|numeric',
-            'size' => 'required|in:s,m,l,xl,xxl,universal',
+            'size' => 'nullable||string',
             'unit' => 'required|in:pcs,set,unit,pair',
+            'price' => 'nullable|string',
             'description' => 'nullable|max:200'
 
            

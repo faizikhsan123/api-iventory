@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionItemController extends Controller
@@ -37,6 +38,10 @@ class TransactionItemController extends Controller
      */
     public function store(StoreTransaction_itemRequest $request)
     {
+
+        // di dalam store()
+        $rawDate = $request->input('date');
+        $date = $rawDate ? Carbon::parse($rawDate)->format('Y-m-d') : now()->toDateString();
         $validated = $request->validated();
 
         $item = Item::findOrFail($validated['items_id']);
@@ -62,7 +67,7 @@ class TransactionItemController extends Controller
             'type' => 'out',
             'note' => $request->input('note'),
             'user_id' => Auth::id(),
-            'date' => $request->input('date') ?? now()->toDateString(),
+            'date' => $date
         ]);
 
         Activity::create([

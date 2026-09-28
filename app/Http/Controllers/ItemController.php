@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\recordPengeluaran;
+use App\Exports\StokKritisExport;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Http\Resources\ItemsResourcec;
@@ -11,9 +13,31 @@ use App\Models\StockHistory;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;   // benar: Facade, bisa Excel::download(...)
 
 class ItemController extends Controller
 {
+    public function exportRanking(Request $request)
+    {
+        $start = $request->input('start', now()->startOfMonth()->toDateString());
+        $end = $request->input('end', now()->endOfMonth()->toDateString());
+
+        return Excel::download(
+            new recordPengeluaran($start, $end),
+            "ranking-pengeluaran-{$start}-sd-{$end}.xlsx"
+        );
+    }
+
+   
+
+    public function exportLowStock()
+    {
+        return Excel::download(
+            new StokKritisExport,
+            'stok-kritis-'.now()->format('Y-m-d_His').'.xlsx'
+        );
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -186,7 +210,7 @@ class ItemController extends Controller
             'price' => $data['price'] ?? null,
             'description' => $data['description'] ?? null,
             'part_number' => $partNumber,
-            'file' => $filePath ??null,
+            'file' => $filePath ?? null,
             'current_stock' => 0,
             'status' => 'out_of_stock',
         ]);

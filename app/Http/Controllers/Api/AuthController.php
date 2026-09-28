@@ -44,12 +44,18 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Login berhasil',
+            'success' => true,
             'data' => [
-                'user' => new UserResource($user),
                 'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ],
             ],
+
         ]);
     }
 
@@ -64,18 +70,19 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-
         $user = $request->user();
 
-        // Buat activity
+        // catat aktivitas dulu
         Activity::create([
             'user_id' => $user->id,
-            'activity' => ' logout ',
+            'activity' => 'Logout',
             'detail' => 'Berhasil logout',
             'type' => 'system',
             'date' => now(),
         ]);
+
+        // hapus token yang lagi dipakai (logout dari device ini saja)
+        $user->currentAccessToken()->delete();
 
         return response()->json([
             'status' => 'success',

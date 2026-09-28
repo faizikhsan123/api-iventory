@@ -3,33 +3,22 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'admin',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('password'),
+        // urutan penting: role harus ada dulu sebelum di-assign
+        $this->call([
+            RolePermissionSeeder::class,
         ]);
 
-        // $this->call([
-        //     SupplierSeeder::class,
-        //     EmployesSeeder::class,
-        //     ItemSeeder::class,
-        //     TransactionSeeder::class,
-        //     TransactionItemSeeder::class,
-        //     ActivitySeeder::class,
-        //     StockHistorySeeder::class
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            ['name' => 'admin', 'password' => bcrypt('password')]
+        );
 
-        // ]);
+        $admin->assignRole('admin');
     }
 }

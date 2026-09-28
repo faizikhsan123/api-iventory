@@ -2,14 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BarangKeluarExport;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Requests\UpdateTransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
 {
+  // pakai Facades, bukan class Excel langsung
+
+public function export(Request $request)
+{
+    return Excel::download(
+        new BarangKeluarExport($request->start, $request->end),
+        'barang-keluar-'.now()->format('Y-m-d_His').'.xlsx'
+    );
+}
     public function index(Request $request)
     {
         $query = Transaction::with(['employes.user', 'transaction_items.item']);

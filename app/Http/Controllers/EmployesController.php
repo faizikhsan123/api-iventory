@@ -125,6 +125,7 @@ class EmployesController extends Controller
             'email' => $data['email'],
             'password' => $data['password'],
         ]);
+        $user->assignRole('staff');
 
         $employes = Employes::create([
             'user_id' => $user->id,
@@ -133,6 +134,8 @@ class EmployesController extends Controller
             'position' => $data['position'],
             'status' => 'active',
         ]);
+
+    
 
         // Activity::create([
         //     'user_id' => Auth::user()->id,

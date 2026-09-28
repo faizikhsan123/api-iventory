@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PenerimaanStokExport;
 use App\Http\Requests\StoreStockInRequest;
 use App\Http\Requests\StoreTransaction_itemRequest;
 use App\Http\Requests\UpdateStockHistoryRequest;
@@ -14,9 +15,18 @@ use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockHistoryController extends Controller
 {
+    public function exportIn(Request $request)
+    {
+        return Excel::download(
+            new PenerimaanStokExport($request->start, $request->end),
+            'penerimaan-stok-'.now()->format('Y-m-d_His').'.xlsx'
+        );  
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -38,7 +48,7 @@ class StockHistoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data StockHistory Ditemukan',
+            'message' => 'Data StockHistory Ditemukan   ',
             'data' => StockHistoryResource::collection($Stockhistory),
             'meta' => [
                 'current_page' => $Stockhistory->currentPage(),
@@ -146,49 +156,49 @@ class StockHistoryController extends Controller
         ]);
     }
 
-    public function trend(Request $request)
-    {
-        // ambil 6 bulan terakhir (termasuk bulan ini)
-        $bulanAwal = now()->subMonths(5)->startOfMonth();
+    // public function trend(Request $request)
+    // {
+    //     // ambil 6 bulan terakhir (termasuk bulan ini)
+    //     $bulanAwal = now()->subMonths(5)->startOfMonth();
 
-        $data = StockHistory::selectRaw("
-            DATE_FORMAT(date, '%Y-%m') as bulan,
-            SUM(CASE WHEN type = 'in' THEN qty ELSE 0 END) as stock_masuk,
-            SUM(CASE WHEN type = 'out' THEN qty ELSE 0 END) as stock_keluar
-        ")
-            ->where('date', '>=', $bulanAwal)
-            ->groupBy('bulan')
-            ->orderBy('bulan')
-            ->get();
+    //     $data = StockHistory::selectRaw("
+    //         DATE_FORMAT(date, '%Y-%m') as bulan,
+    //         SUM(CASE WHEN type = 'in' THEN qty ELSE 0 END) as stock_masuk,
+    //         SUM(CASE WHEN type = 'out' THEN qty ELSE 0 END) as stock_keluar
+    //     ")
+    //         ->where('date', '>=', $bulanAwal)
+    //         ->groupBy('bulan')
+    //         ->orderBy('bulan')
+    //         ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $data,
+    //     ]);
+    // }
 
-    public function categoryDistribution(Request $request)
-    {
-        $data = StockHistory::join('items', 'stock_histories.item_id', '=', 'items.id')
-            ->selectRaw('items.category, SUM(stock_histories.qty) as total')
-            ->groupBy('items.category')
-            ->get();
+    // public function categoryDistribution(Request $request)
+    // {
+    //     $data = StockHistory::join('items', 'stock_histories.item_id', '=', 'items.id')
+    //         ->selectRaw('items.category, SUM(stock_histories.qty) as total')
+    //         ->groupBy('items.category')
+    //         ->get();
 
-        $grandTotal = $data->sum('total');
+    //     $grandTotal = $data->sum('total');
 
-        $result = $data->map(function ($row) use ($grandTotal) {
-            return [
-                'category' => $row->category,
-                'total' => (int) $row->total,
-                'percentage' => $grandTotal > 0 ? round(($row->total / $grandTotal) * 100) : 0,
-            ];
-        });
+    //     $result = $data->map(function ($row) use ($grandTotal) {
+    //         return [
+    //             'category' => $row->category,
+    //             'total' => (int) $row->total,
+    //             'percentage' => $grandTotal > 0 ? round(($row->total / $grandTotal) * 100) : 0,
+    //         ];
+    //     });
 
-        return response()->json([
-            'success' => true,
-            'data' => $result,
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $result,
+    //     ]);
+    // }
 
     /**
      * Display the specified resource.

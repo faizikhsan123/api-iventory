@@ -26,7 +26,7 @@ class StoreStockInRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.item_id' => ['required', 'exists:items,id'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
-            'items.*.unit' => ['required', 'in:pcs,set,pair,unit'],
+            'items.*.unit' => ['required', 'in:pcs,set,pair,unit,others'],
         ];
     }
 }

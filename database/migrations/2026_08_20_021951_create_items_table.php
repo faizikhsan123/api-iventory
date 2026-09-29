@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('part_number');
             $table->string('file')->nullable();
             $table->string('name');
-            $table->enum('category', ['apd','tools'])->default('apd');
+            $table->enum('category', ['apd','tools', 'others'])->default('apd');
             $table->string('brand')->nullable();
             $table->string('type')->nullable();
             $table->string('size')->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             //     'xl',
             //     'xxl',
             //     'universal'])->nullable();
-            $table->enum('unit', ['pcs', 'set', 'unit', 'pair'])->default('pcs');
+            $table->enum('unit', ['pcs', 'set', 'unit', 'pair', 'others'])->default('pcs');
             $table->integer('min_stock')->nullable();
             $table->integer('current_stock')->nullable();
             $table->enum('status', ['available', 'low_stock', 'out_of_stock'])->default('available')->nullable();

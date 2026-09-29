@@ -25,12 +25,12 @@ class StoreItemRequest extends FormRequest
         return [
             'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120',
             'name' => 'required|max:50',
-            'category' => 'required|in:apd,tools',
+            'category' => 'required|in:apd,tools,others',
             'brand' => 'nullable|max:20',
             'type' => 'nullable|max:20|string',
             'min_stock' => 'nullable|numeric',
             'size' => 'nullable||string',
-            'unit' => 'required|in:pcs,set,unit,pair',
+            'unit' => 'required|in:pcs,set,unit,pair,others',
             'price' => 'nullable|string',
             'description' => 'nullable|max:200'
 

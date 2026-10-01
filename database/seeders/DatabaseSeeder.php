@@ -20,5 +20,12 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin->assignRole('admin');
+
+        $admin = User::firstOrCreate(
+            ['email' => 'prita@gmail.com'],
+            ['name' => 'prita', 'password' => bcrypt('password')]
+        );
+
+        $admin->assignRole('staff');
     }
 }

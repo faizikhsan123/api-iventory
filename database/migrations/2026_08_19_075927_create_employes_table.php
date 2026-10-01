@@ -25,6 +25,7 @@ return new class extends Migration
                 'Supervisor',
                 'Foreman',
                 'Technician',
+                'Safety'
             ])->default('Technician');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();

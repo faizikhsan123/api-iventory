@@ -122,10 +122,10 @@ class EmployesController extends Controller
 
         $user = User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
+            // 'email' => $data['email'],
+            // 'password' => $data['password'],
         ]);
-        $user->assignRole('staff');
+        
 
         $employes = Employes::create([
             'user_id' => $user->id,
@@ -204,7 +204,7 @@ class EmployesController extends Controller
 
         $employe->user()->update([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            // 'email' => $validated['email'],
 
             // 'password' => bcrypt($validated['password']),
         ]);

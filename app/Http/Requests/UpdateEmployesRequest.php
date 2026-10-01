@@ -24,17 +24,17 @@ class UpdateEmployesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:20', 'min:4'],
+            'name' => ['required', 'string', 'max:50', 'min:4'],
             'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120',
-            'email' => [
-                'required',
-                'email:dns,rfc',
-                'max:50',
-                Rule::unique('users', 'email')->ignore($this->route('employe')?->user_id, 'id'),
-            ],
+            // 'email' => [
+            //     'required',
+            //     'email:dns,rfc',
+            //     'max:50',
+            //     Rule::unique('users', 'email')->ignore($this->route('employe')?->user_id, 'id'),
+            // ],
             // 'password' => ['required', 'string', 'min:8', 'max:50'],
             'division' => ['required', 'in:GA,INC-PMR,INC-ER'],
-            'position' => ['required', 'in:Technician,Supervisor,Foreman'],
+            'position' => ['required', 'in:Technician,Supervisor,Foreman,Safety'],
             'status' => ['required', 'in:active,inactive'],
         ];
     }

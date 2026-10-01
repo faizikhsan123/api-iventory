@@ -182,13 +182,7 @@ class ItemController extends Controller
      */
     public function store(StoreItemRequest $request)
     {
-        // Generate Part Number
-        $partNumber = 'ITM-'.str_pad(
-            Item::count() + 1,
-            6,
-            '0',
-            STR_PAD_LEFT
-        );
+      
 
         $filePath = null;
 
@@ -205,11 +199,11 @@ class ItemController extends Controller
             'brand' => $data['brand'] ?? null,
             'type' => $data['type'] ?? null,
             'min_stock' => $data['min_stock'] ?? null,
-            'size' => $data['size'] ?? null,
+           
             'unit' => $data['unit'],
             'price' => $data['price'] ?? null,
             'description' => $data['description'] ?? null,
-            'part_number' => $partNumber,
+            'part_number' => $data['part_number'] ?? null,
             'file' => $filePath ?? null,
             'current_stock' => 0,
             'status' => 'out_of_stock',

@@ -24,11 +24,11 @@ class StoreEmployesRequest extends FormRequest
     {
         return [
             'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120',
-            'name' => ['required', 'string', 'max:20', 'min:4'],
-            'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'max:200'],
+            'name' => ['required', 'string', 'max:50', 'min:4'],
+            // 'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email'],
+            // 'password' => ['required', 'string', 'min:8', 'max:200'],
             'division' => ['required', 'in:GA,INC-PMR,INC-ER'],
-            'position' => ['required', 'in:Technician,Supervisor,Foreman'],
+            'position' => ['required', 'in:Technician,Supervisor,Foreman,Safety'],
         ];
     }
 }

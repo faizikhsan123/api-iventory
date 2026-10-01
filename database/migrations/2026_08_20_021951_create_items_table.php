@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->id();
-            $table->string('part_number');
+          
             $table->string('file')->nullable();
             $table->string('name');
             $table->enum('category', ['apd','tools', 'others'])->default('apd');
             $table->string('brand')->nullable();
             $table->string('type')->nullable();
-            $table->string('size')->nullable();
+              $table->string('part_number');
+            // $table->string('size')->nullable();
             // $table->string('size', [
             //     's',
             //     'm',

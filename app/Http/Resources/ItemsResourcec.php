@@ -22,7 +22,7 @@ class ItemsResourcec extends JsonResource
             'category' => $this->category,
             'brand' => $this->brand,
             'type' => $this->type,
-            'size' => $this->size,
+            // 'size' => $this->size,
             'unit' => $this->unit,
             'min_stock' => $this->min_stock,
             'current_stock' => $this->current_stock,

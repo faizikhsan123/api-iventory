@@ -3,17 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Exports\recordPengeluaran;
+use App\Exports\StockOnHandExport;
 use App\Exports\StokKritisExport;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Http\Resources\ItemsResourcec;
 use App\Models\Activity;
 use App\Models\Item;
+use App\Models\ItemPriceHistory;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Maatwebsite\Excel\Facades\Excel;   // benar: Facade, bisa Excel::download(...)
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ItemController extends Controller
 {
@@ -28,8 +31,6 @@ class ItemController extends Controller
         );
     }
 
-   
-
     public function exportLowStock()
     {
         return Excel::download(
@@ -38,27 +39,28 @@ class ItemController extends Controller
         );
     }
 
-    /**
-     * Display a listing of the resource.
-     */
+    public function exportStockOnHand(Request $request)
+{
+    return Excel::download(
+        new StockOnHandExport($request->input('search'), $request->input('category')),
+        'stock-on-hand-'.now()->format('Y-m-d_His').'.xlsx'
+    );
+}
+
     public function index(Request $request)
     {
-        $perPage = max(1, min(
-            $request->integer('per_page', 10),
-            100
-        ));
+        $perPage = max(1, min($request->integer('per_page', 10), 100));
 
         $query = Item::query();
 
         if ($request->filled('search')) {
             $query->where('name', 'like', '%'.$request->input('search').'%');
-
         }
 
         if ($request->filled('category')) {
             $query->where('category', $request->input('category'));
-
         }
+
         $Items = $query->latest()->paginate($perPage);
 
         return response()->json([
@@ -74,9 +76,49 @@ class ItemController extends Controller
         ]);
     }
 
+    public function stockOnHand(Request $request)
+    {
+        $perPage = max(1, min($request->integer('per_page', 10), 100));
+
+        $query = Item::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%'.$request->input('search').'%');
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
+        $totalNilai = (clone $query)->sum(DB::raw('COALESCE(current_stock, 0) * avg_price'));
+
+        $items = $query->orderBy('name')->paginate($perPage);
+
+        $rows = $items->getCollection()->map(fn ($item) => [
+            'id' => $item->id,
+            'name' => $item->name,
+            'category' => $item->category,
+            'unit' => $item->unit,
+            'current_stock' => (int) $item->current_stock,
+            'stock_value' => round((int) $item->current_stock * (float) $item->avg_price, 2),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Stock On Hand Ditemukan',
+            'data' => $rows,
+            'total_nilai' => round((float) $totalNilai, 2),
+            'meta' => [
+                'current_page' => $items->currentPage(),
+                'last_page' => $items->lastPage(),
+                'per_page' => $items->perPage(),
+                'total' => $items->total(),
+            ],
+        ]);
+    }
+
     public function lowStock(Request $request)
     {
-        // where raw ini ngambil dari db
         $items = Item::whereRaw('current_stock < min_stock')
             ->latest()
             ->paginate($request->per_page ?? 10);
@@ -96,35 +138,28 @@ class ItemController extends Controller
 
     public function detail(Item $item)
     {
-        // ambil riwayat stok (gabungan in & out) khusus buat item ini,
-        // dibatasi 20 data terbaru biar gak berat
         $riwayatStok = StockHistory::where('item_id', $item->id)
-            ->with(['user', 'supplier']) // eager load biar gak N+1 query pas ambil nama user/supplier
+            ->with(['user', 'supplier'])
             ->latest()
             ->limit(20)
             ->get()
-            // ubah tiap baris jadi format yang gampang dipake di frontend
             ->map(function ($history) {
                 return [
                     'date' => $history->date,
-                    'type' => $history->type, // 'in' atau 'out'
+                    'type' => $history->type,
                     'qty' => $history->qty,
                     'note' => $history->note,
                     'user_name' => $history->user->name ?? '-',
-                    // supplier cuma ada kalau type-nya 'in' (stock masuk dari supplier)
-                    // makanya butuh null check, karena stock 'out' gak punya supplier
                     'supplier_name' => $history->supplier->name ?? null,
                 ];
             });
 
-        // ambil riwayat pemberian barang (dari TransactionItem) khusus item ini
         $riwayatPemberian = TransactionItem::where('items_id', $item->id)
-            ->with(['transaction.employes.user']) // nested eager load: transaction_item -> transaction -> employes -> user
+            ->with(['transaction.employes.user'])
             ->latest()
             ->limit(20)
             ->get()
             ->map(function ($transactionItem) {
-                // simpan transaction-nya ke variabel biar gak nulis $transactionItem->transaction berulang-ulang
                 $transaction = $transactionItem->transaction;
 
                 return [
@@ -136,54 +171,43 @@ class ItemController extends Controller
                 ];
             });
 
-        // hitung total qty yang pernah diberikan sepanjang waktu, buat item ini
-        // sum() otomatis balikin 0 kalau gak ada data, jadi aman gak perlu null check
+        $riwayatHarga = ItemPriceHistory::where('item_id', $item->id)
+            ->with('user')
+            ->latest()
+            ->limit(20)
+            ->get()
+            ->map(fn ($h) => [
+                'date' => $h->created_at->toDateString(),
+                'old_price' => (float) $h->old_price,
+                'new_price' => (float) $h->new_price,
+                'user_name' => $h->user->name ?? '-',
+            ]);
+
         $totalDiberikan = TransactionItem::where('items_id', $item->id)->sum('qty');
 
-        // ambil tanggal terakhir kali item ini nambah stok (type = 'in')
-        // value('date') ambil 1 kolom doang dari 1 baris, lebih ringan dibanding get()
         $terakhirMasuk = StockHistory::where('item_id', $item->id)
             ->where('type', 'in')
-            ->latest('date') // urutkan berdasarkan kolom 'date', bukan created_at
+            ->latest('date')
             ->value('date');
 
         return response()->json([
             'success' => true,
             'message' => 'Data Detail Barang Ditemukan',
             'data' => [
-                // info dasar barang (nama, kategori, stok, dll) — pake resource yg udah ada
                 'item' => new ItemsResourcec($item),
-
-                // ringkasan angka buat ditampilin di panel statistik
                 'statistik' => [
                     'total_diberikan' => (int) $totalDiberikan,
                     'tanggal_terakhir_masuk' => $terakhirMasuk,
                 ],
-
-                // list riwayat buat ditampilin di tab "Riwayat Stok"
                 'riwayat_stok' => $riwayatStok,
-
-                // list riwayat buat ditampilin di tab "Riwayat Pemberian"
                 'riwayat_pemberian' => $riwayatPemberian,
+                'riwayat_harga' => $riwayatHarga,
             ],
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreItemRequest $request)
     {
-      
-
         $filePath = null;
 
         if ($request->hasFile('file')) {
@@ -191,20 +215,20 @@ class ItemController extends Controller
         }
 
         $data = $request->validated();
+        $price = (float) ($data['price'] ?? 0);
 
         $items = Item::create([
-
             'name' => $data['name'],
             'category' => $data['category'],
             'brand' => $data['brand'] ?? null,
             'type' => $data['type'] ?? null,
             'min_stock' => $data['min_stock'] ?? null,
-           
             'unit' => $data['unit'],
-            'price' => $data['price'] ?? null,
+            'price' => $price,
+            'avg_price' => $price,
             'description' => $data['description'] ?? null,
             'part_number' => $data['part_number'] ?? null,
-            'file' => $filePath ?? null,
+            'file' => $filePath,
             'current_stock' => 0,
             'status' => 'out_of_stock',
         ]);
@@ -226,26 +250,19 @@ class ItemController extends Controller
 
     public function topBorrowed(Request $request)
     {
-        // diinpput berdasarkan date  defaultt bulan saa inni
         $start = $request->input('start', now()->startOfMonth());
         $end = $request->input('end', now()->endOfMonth());
 
         $data = Item::query()
-        // buat field total_pinjam dari query berikut
             ->withSum(['stock_history as total_pinjam' => function ($q) use ($start, $end) {
                 $q->where('type', 'out')->whereBetween('date', [$start, $end]);
             }], 'qty')
-            // having ini utnuk menyimpan nilai total_pinjam yg lebih dari 0
             ->having('total_pinjam', '>', 0)
-            // diurutkann
             ->orderByDesc('total_pinjam')
             ->limit(10)
             ->get()
             ->values()
-            // ketika dpt nilainya maka  di map semua item dan dimasukkan ke get topBorrowed
             ->map(function ($item, $i) {
-                // total ppinjam dimabil dari  yg diats
-                // ranknya sesuaikan inndex + 1
                 $item->total_pinjam = $item->total_pinjam ?? 0;
                 $item->rank = $i + 1;
 
@@ -255,9 +272,6 @@ class ItemController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Item $item)
     {
         return response()->json([
@@ -267,63 +281,62 @@ class ItemController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Item $item)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateItemRequest $request, Item $item)
     {
         $filePath = $item->file;
 
         if ($request->hasFile('file')) {
-
             $filePath = $request->file('file')->store('items', 'public');
         }
 
         $data = $request->validated();
 
-        $item->update([
-            'name' => $data['name'],
-            'category' => $data['category'] ?? null,
-            'brand' => $data['brand'] ?? null,
-            'type' => $data['type'] ?? null,
-            'min_stock' => $data['min_stock'] ?? null,
-            'size' => $data['size'] ?? null,
-            'unit' => $data['unit'],
-            'price' => $data['price'] ?? null,
-            'description' => $data['description'] ?? null,
-            'file' => $filePath,
-        ]);
+        $oldPrice = (float) $item->price;
+        $newPrice = (float) ($data['price'] ?? 0);
 
-        Activity::create([
-            'user_id' => Auth::user()->id,
-            'activity' => 'Merubah Data Barang',
-            'detail' => "Data Barang {$data['name']} Berhasil Dirubah",
-            'type' => null,
-            'date' => now(),
+        DB::transaction(function () use ($item, $data, $filePath, $oldPrice, $newPrice) {
+            $item->update([
+                'name' => $data['name'],
+                'category' => $data['category'] ?? null,
+                'brand' => $data['brand'] ?? null,
+                'type' => $data['type'] ?? null,
+                'min_stock' => $data['min_stock'] ?? null,
+                'part_number' => $data['part_number'] ?? null,
+                'unit' => $data['unit'],
+                'price' => $newPrice,
+                'description' => $data['description'] ?? null,
+                'file' => $filePath,
+            ]);
 
-        ]);
+            if ($oldPrice !== $newPrice) {
+                ItemPriceHistory::create([
+                    'item_id' => $item->id,
+                    'user_id' => Auth::id(),
+                    'old_price' => $oldPrice,
+                    'new_price' => $newPrice,
+                ]);
+            }
+
+            Activity::create([
+                'user_id' => Auth::id(),
+                'activity' => 'Merubah Data Barang',
+                'detail' => "Data Barang {$data['name']} Berhasil Dirubah",
+                'type' => null,
+                'date' => now(),
+            ]);
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Data Item Berhasil Diubah',
-            'data' => new ItemsResourcec($item->fresh()), // fresh() biar ambil data terbaru
+            'data' => new ItemsResourcec($item->fresh()),
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Item $item)
     {
         $item->delete();
+
         Activity::create([
             'user_id' => Auth::user()->id,
             'activity' => 'Menghapus Barang',

@@ -38,7 +38,9 @@ class DashboardController extends Controller
                     'name' => $history->item->name ?? '-',
                     'type' => $history->type,
                     'qty' => $history->qty,
+                    'unit' => $history->item->unit ?? '-',
                     'user_name' => $history->user->name ?? '-',
+
                 ];
             });
 
@@ -48,15 +50,13 @@ class DashboardController extends Controller
             ->limit(5)
             ->get()
             ->map(function ($transaction) {
-                $itemNames = $transaction->transaction_items
-                    ->map(fn($ti) => $ti->item->name ?? null)
-                    ->filter()
-                    ->implode(', ');
+                $items = $transaction->transaction_items->pluck('item')->filter();
 
                 return [
                     'transaction_number' => $transaction->transaction_number,
                     'employe_name' => $transaction->employes->user->name ?? '-',
-                    'barang' => $itemNames,
+                    'barang' => $items->pluck('name')->implode(', '),
+                    'category' => $items->pluck('category')->filter()->unique()->implode(', '),
                     'date' => $transaction->date,
                 ];
             });
@@ -77,4 +77,4 @@ class DashboardController extends Controller
             ],
         ]);
     }
-} 
+}

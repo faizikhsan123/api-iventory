@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('category', ['apd','tools', 'others'])->default('apd');
             $table->string('brand')->nullable();
             $table->string('type')->nullable();
-              $table->string('part_number');
+              $table->string('part_number')->nullable();
             // $table->string('size')->nullable();
             // $table->string('size', [
             //     's',
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */ 

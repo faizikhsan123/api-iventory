@@ -12,6 +12,7 @@ use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
+use App\Services\StockValuation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class StockHistoryController extends Controller
         return Excel::download(
             new PenerimaanStokExport($request->start, $request->end),
             'penerimaan-stok-'.now()->format('Y-m-d_His').'.xlsx'
-        );  
+        );
     }
 
     /**
@@ -119,21 +120,23 @@ class StockHistoryController extends Controller
             $histories = [];
 
             foreach ($validated['items'] as $itemLine) {
-                $item = Item::findOrFail($itemLine['item_id']);
+                $item = Item::lockForUpdate()->findOrFail($itemLine['item_id']);
+
+                $unitPrice = StockValuation::applyIn($item, (int) $itemLine['qty']);
 
                 $stockHistory = StockHistory::create([
                     'item_id' => $itemLine['item_id'],
                     'supplier_id' => $validated['supplier_id'],
                     'qty' => $itemLine['qty'],
+                    'unit_price' => $unitPrice,
                     'type' => 'in',
                     'note' => $validated['note'] ?? 'Stock Masuk',
                     'date' => $validated['date'],
                     'user_id' => Auth::id(),
                 ]);
 
-                $item->update([
-                    'current_stock' => $item->current_stock + $itemLine['qty'],
-                ]);
+                $item->current_stock = (int) $item->current_stock + (int) $itemLine['qty'];
+                $item->save();
 
                 Activity::create([
                     'user_id' => Auth::id(),
@@ -155,7 +158,6 @@ class StockHistoryController extends Controller
             'data' => StockHistoryResource::collection(collect($createdHistories)),
         ]);
     }
-
     // public function trend(Request $request)
     // {
     //     // ambil 6 bulan terakhir (termasuk bulan ini)

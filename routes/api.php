@@ -49,6 +49,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/items/top-borrowed', [ItemController::class, 'topBorrowed']);
 
+    Route::get('/items/stock-on-hand', [ItemController::class, 'stockOnHand']);
+
+    Route::get('/items/export-stock-on-hand', [ItemController::class, 'exportStockOnHand']);
+    
+
     // items
     Route::apiResource('items', ItemController::class);
 

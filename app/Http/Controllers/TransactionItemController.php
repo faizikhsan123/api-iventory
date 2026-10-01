@@ -9,8 +9,10 @@ use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
+use App\Services\StockValuation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TransactionItemController extends Controller
 {
@@ -36,21 +38,17 @@ class TransactionItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTransaction_itemRequest $request)
-    {
+   public function store(StoreTransaction_itemRequest $request)
+{
+    $rawDate = $request->input('date');
+    $date = $rawDate ? Carbon::parse($rawDate)->format('Y-m-d') : now()->toDateString();
+    $validated = $request->validated();
 
-        // di dalam store()
-        $rawDate = $request->input('date');
-        $date = $rawDate ? Carbon::parse($rawDate)->format('Y-m-d') : now()->toDateString();
-        $validated = $request->validated();
-
-        $item = Item::findOrFail($validated['items_id']);
+    $result = DB::transaction(function () use ($validated, $request, $date) {
+        $item = Item::lockForUpdate()->findOrFail($validated['items_id']);
 
         if ($item->current_stock < $validated['qty']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Stok tidak mencukupi',
-            ], 422);
+            return null;
         }
 
         $transactionItem = TransactionItem::create([
@@ -64,26 +62,37 @@ class TransactionItemController extends Controller
         StockHistory::create([
             'item_id' => $validated['items_id'],
             'qty' => $validated['qty'],
+            'unit_price' => StockValuation::snapshotOut($item),
             'type' => 'out',
             'note' => $request->input('note'),
             'user_id' => Auth::id(),
-            'date' => $date
+            'date' => $date,
         ]);
 
         Activity::create([
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'activity' => 'Memberikan Barang',
-            'detail' => "Barang {$item['name']} Diberikan Sebanyak {$validated['qty']} {$item['unit']}",
+            'detail' => "Barang {$item->name} Diberikan Sebanyak {$validated['qty']} {$item->unit}",
             'type' => 'stockout',
             'date' => now(),
         ]);
 
+        return $transactionItem;
+    });
+
+    if (! $result) {
         return response()->json([
-            'success' => true,
-            'message' => 'Item berhasil ditambahkan',
-            'data' => new ItemTransactionResource($transactionItem->load('item', 'transaction')),
-        ]);
+            'success' => false,
+            'message' => 'Stok tidak mencukupi',
+        ], 422);
     }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Item berhasil ditambahkan',
+        'data' => new ItemTransactionResource($result->load('item', 'transaction')),
+    ]);
+}
 
     /**
      * Display the specified resource.

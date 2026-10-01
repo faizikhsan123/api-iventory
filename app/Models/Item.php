@@ -10,20 +10,19 @@ class Item extends Model
     use HasFactory;
 
     protected $fillable = [
-
         'file',
         'category',
         'name',
         'brand',
         'type',
         'part_number',
-        // 'size',
         'unit',
         'current_stock',
         'status',
         'min_stock',
         'description',
         'price',
+        'avg_price',
     ];
 
     public function transaction_items()
@@ -34,5 +33,10 @@ class Item extends Model
     public function stock_history()
     {
         return $this->hasMany(StockHistory::class);
+    }
+
+    public function price_histories()
+    {
+        return $this->hasMany(ItemPriceHistory::class);
     }
 }

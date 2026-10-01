@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Services\StockValuation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -54,6 +55,7 @@ class StockOutController extends Controller
                     'note' => $validated['note'] ?? null,
                     'user_id' => Auth::id(),
                     'date' => $validated['date'],
+                    'unit_price' => StockValuation::snapshotOut($item),
                 ]);
 
              

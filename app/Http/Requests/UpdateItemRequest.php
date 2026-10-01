@@ -32,7 +32,7 @@ class UpdateItemRequest extends FormRequest
             'part_number' => 'nullable|string|max:50',
         //    'size' => 'nullable|string',
             'unit' => 'required|in:pcs,set,unit,pair,others',
-            'price' => 'nullable|string',
+        'price' => 'nullable|numeric|min:0',
             'description' => 'nullable|max:200'
 
         ];

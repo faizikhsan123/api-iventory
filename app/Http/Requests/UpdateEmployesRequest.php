@@ -33,7 +33,7 @@ class UpdateEmployesRequest extends FormRequest
             //     Rule::unique('users', 'email')->ignore($this->route('employe')?->user_id, 'id'),
             // ],
             // 'password' => ['required', 'string', 'min:8', 'max:50'],
-            'division' => ['required', 'in:GA,INC-PMR,INC-ER'],
+            'division' => ['required', 'in:Gas Analyzer,I&C-PMR,I&C-ER'],
             'position' => ['required', 'in:Technician,Supervisor,Foreman,Safety'],
             'status' => ['required', 'in:active,inactive'],
         ];

@@ -27,7 +27,7 @@ class StoreEmployesRequest extends FormRequest
             'name' => ['required', 'string', 'max:50', 'min:4'],
             // 'email' => ['required', 'email:dns,rfc', 'max:50', 'unique:users,email'],
             // 'password' => ['required', 'string', 'min:8', 'max:200'],
-            'division' => ['required', 'in:GA,INC-PMR,INC-ER'],
+            'division' => ['required', 'in:Gas Analyzer,I&C-PMR,I&C-ER'],
             'position' => ['required', 'in:Technician,Supervisor,Foreman,Safety'],
         ];
     }

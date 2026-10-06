@@ -16,10 +16,14 @@ class EmployesResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'id_number' => $this->id_number,
             'division' => $this->division,
             'file' => $this->file,
             'position' => $this->position,
             'status' => $this->status,
+            'ktp_address' => $this->ktp_address,
+            'actual_address' => $this->actual_address,
+            'emergency_contact' => $this->emergency_contact,
             'user' => $this->whenLoaded('user'),
             'given_items_count' => $this->given_items_count ?? 0,
             'items' => $this->whenLoaded('transactionItems', function () {

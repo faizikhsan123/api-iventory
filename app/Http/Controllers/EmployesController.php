@@ -129,10 +129,14 @@ class EmployesController extends Controller
 
         $employes = Employes::create([
             'user_id' => $user->id,
+            'id_number' => $data['id_number'],
             'file' => $filePath,
             'division' => $data['division'],
             'position' => $data['position'],
             'status' => 'active',
+            'ktp_address' => $data['ktp_address'] ?? null,
+            'actual_address' => $data['actual_address'] ?? null,
+            'emergency_contact' => $data['emergency_contact'] ?? null,
         ]);
 
     
@@ -196,10 +200,14 @@ class EmployesController extends Controller
         }
 
         $employe->update([
+            'id_number' => $validated['id_number'],
             'file' => $filePath ?? null,
             'division' => $validated['division'],
             'position' => $validated['position'],
-            'status' => $validated['status'],   
+            'status' => $validated['status'],
+            'ktp_address' => $validated['ktp_address'] ?? null,
+            'actual_address' => $validated['actual_address'] ?? null,
+            'emergency_contact' => $validated['emergency_contact'] ?? null,
         ]);
 
         $employe->user()->update([

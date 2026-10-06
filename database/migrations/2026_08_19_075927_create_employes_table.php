@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('employes', function (Blueprint $table) {
             $table->id();
+            $table->string('id_number');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('file')->nullable();
-
                 $table->enum('division', [
                     'Gas Analyzer',
                     'I&C-PMR',
@@ -28,6 +28,11 @@ return new class extends Migration
                 'Safety'
             ])->default('Technician');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('ktp_address')->nullable();
+            $table->string('actual_address')->nullable();
+            $table->string('emergency_contact')->nullable();
+           
+
             $table->timestamps();
         });
     }

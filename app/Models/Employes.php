@@ -13,11 +13,15 @@ class Employes extends Model
 
     protected $fillable = [
         'user_id',
+        'id_number',
         'file',
         'transactions_id',
         'division',
         'position',
         'status',
+        'ktp_address',
+        'actual_address',
+        'emergency_contact',
     ];
 
     // satu karyawan sattu user

@@ -4,6 +4,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployesController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\StockOutController;
@@ -82,5 +83,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
 
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+
+
+    // group
+    Route::apiResource('groups', GroupController::class);
 
 });

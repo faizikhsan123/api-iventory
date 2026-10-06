@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('id_number');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('group_id')->nullable()->constrained()->nullOnDelete();
             $table->string('file')->nullable();
                 $table->enum('division', [
                     'Gas Analyzer',

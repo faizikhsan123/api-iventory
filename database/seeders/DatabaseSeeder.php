@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employes;
+use App\Models\group;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +14,9 @@ class DatabaseSeeder extends Seeder
         // urutan penting: role harus ada dulu sebelum di-assign
         $this->call([
             RolePermissionSeeder::class,
+            // UserSeeder::class,
+            // EmployesSeeder::class,
+            // groupSeeder::class,
         ]);
 
         $admin = User::firstOrCreate(
@@ -27,5 +32,9 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin->assignRole('staff');
+
+     
+
+       
     }
 }

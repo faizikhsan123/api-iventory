@@ -13,6 +13,7 @@ class Employes extends Model
 
     protected $fillable = [
         'user_id',
+        'group_id',
         'id_number',
         'file',
         'transactions_id',
@@ -28,6 +29,12 @@ class Employes extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // satu karyawan satu group
+    public function group(){
+        
+        return $this->belongsTo(group::class, 'group_id');
     }
 
     // satu karyawan dapat memiliki banyak transaksi

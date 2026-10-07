@@ -45,7 +45,7 @@ class GroupController extends Controller
             'end_time' => $data['end_time'],
         ]);
 
-        // jika ada employes_ids, maka update group_id di tabel employes
+        // jika ada employes_ids, maka update group_id di tabel employes 
         if (! empty($data['employes_ids'])) {
             Employes::whereIn('id', $data['employes_ids'])
                 ->update(['group_id' => $group->id]);
@@ -112,6 +112,14 @@ class GroupController extends Controller
      */
     public function destroy(group $group)
     {
-        //
+        // lepas semua anggota
+        $group->employes()->update(['group_id' => null]);
+
+        $group->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Group Berhasil Dihapus',
+        ]);
     }
 }

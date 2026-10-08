@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateParticipantRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'date' => 'required|date_format:Y-m-d',
+            'file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'notes' => 'nullable|string|max:255',
+        ];
+    }
+}

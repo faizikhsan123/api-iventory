@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\TrainingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Training extends Model
 {
@@ -16,9 +17,11 @@ class Training extends Model
         'division_training',
         'name_training',
         'created_by',
-        'date'
-
+        'date',
     ];
 
-  
+    public function participants(): HasMany
+    {
+        return $this->hasMany(TrainingParticipant::class);
+    }
 }

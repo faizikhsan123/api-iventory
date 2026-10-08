@@ -32,8 +32,9 @@ class Employes extends Model
     }
 
     // satu karyawan satu group
-    public function group(){
-        
+    public function group()
+    {
+
         return $this->belongsTo(group::class, 'group_id');
     }
 
@@ -41,6 +42,12 @@ class Employes extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    // satu karyawan bisa banya ikut raining datanya diambil darti employess_id 
+    public function trainingParticipants()
+    {
+        return $this->hasMany(TrainingParticipant::class, 'employes_id');
     }
 
     // ambil TransactionItem tapi lewat Transaction dulu (employes gak nyambung langsung ke transaction_items)
@@ -56,4 +63,3 @@ class Employes extends Model
         );
     }
 }
-        

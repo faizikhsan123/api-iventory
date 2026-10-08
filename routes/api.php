@@ -9,6 +9,8 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TrainingController;
+use App\Http\Controllers\TrainingParticipantController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionItemController;
 use Illuminate\Support\Facades\Route;
@@ -88,4 +90,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // group
     Route::apiResource('groups', GroupController::class);
 
+    // training
+    Route::apiResource('trainings', TrainingController::class);
+
+Route::get('trainings/{training}/participants', [TrainingParticipantController::class, 'index']);
+Route::post('trainings/{training}/participants', [TrainingParticipantController::class, 'store']);
+Route::post('participants/{participant}', [TrainingParticipantController::class, 'update']);
+Route::get('participants/{participant}/file', [TrainingParticipantController::class, 'showFile']);
+Route::delete('participants/{participant}', [TrainingParticipantController::class, 'destroy']);
 });

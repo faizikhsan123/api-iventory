@@ -22,7 +22,7 @@ return new class extends Migration
             ])->default('Gas Analyzer');
             $table->string('name_training');
             $table->string('created_by');
-            $table->dateTime('date');
+            // $table->dateTime('date');
             $table->timestamps();
         });
     }

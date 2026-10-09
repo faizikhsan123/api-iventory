@@ -41,8 +41,7 @@ class GroupController extends Controller
 
         $group = group::create([
             'name_group' => $data['name_group'],
-            'start_time' => $data['start_time'],
-            'end_time' => $data['end_time'],
+           
         ]);
 
         // jika ada employes_ids, maka update group_id di tabel employes 
@@ -88,7 +87,7 @@ class GroupController extends Controller
         $data = $request->validated();
 
         // update data group
-        $group->update($request->safe()->only(['name_group', 'start_time', 'end_time']));
+        $group->update($request->safe()->only(['name_group']));
 
         // jika ada employes_ids, maka update group_id di tabel employes
         if ($request->has('employes_ids')) {

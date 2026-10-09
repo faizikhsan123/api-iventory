@@ -28,7 +28,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/employes/{employe}/detail', [EmployesController::class, 'detail']);
 
-    
     // employees
     // semua user login boleh lihat
     Route::apiResource('employes', EmployesController::class)
@@ -39,8 +38,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('employes', EmployesController::class)
             ->except(['index', 'show']);
     });
-
-
 
     Route::get('/items/export-low-stock', [ItemController::class, 'exportLowStock']);
 
@@ -55,7 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/items/stock-on-hand', [ItemController::class, 'stockOnHand']);
 
     Route::get('/items/export-stock-on-hand', [ItemController::class, 'exportStockOnHand']);
-    
 
     // items
     Route::apiResource('items', ItemController::class);
@@ -86,16 +82,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
 
-
     // group
     Route::apiResource('groups', GroupController::class);
 
     // training
     Route::apiResource('trainings', TrainingController::class);
 
-Route::get('trainings/{training}/participants', [TrainingParticipantController::class, 'index']);
-Route::post('trainings/{training}/participants', [TrainingParticipantController::class, 'store']);
-Route::post('participants/{participant}', [TrainingParticipantController::class, 'update']);
-Route::get('participants/{participant}/file', [TrainingParticipantController::class, 'showFile']);
-Route::delete('participants/{participant}', [TrainingParticipantController::class, 'destroy']);
+    Route::get('trainings/{training}/participants', [TrainingParticipantController::class, 'index']);
+    Route::post('trainings/{training}/participants', [TrainingParticipantController::class, 'store']);
+    Route::post('participants/{participant}', [TrainingParticipantController::class, 'update']);
+    Route::get('participants/{participant}/file', [TrainingParticipantController::class, 'showFile']);
+    Route::delete('participants/{participant}', [TrainingParticipantController::class, 'destroy']);
 });

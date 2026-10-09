@@ -21,7 +21,7 @@ return new class extends Migration
                 'Safety',
             ])->default('Gas Analyzer');
             $table->string('name_training');
-            $table->string('created_by');
+            $table->string('by');
             // $table->dateTime('date');
             $table->timestamps();
         });

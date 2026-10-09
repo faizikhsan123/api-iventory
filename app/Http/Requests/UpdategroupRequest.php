@@ -24,8 +24,7 @@ class UpdategroupRequest extends FormRequest
     {
         return [
             'name_group' => 'sometimes|string|max:255',
-            'start_time' => 'sometimes|date_format:H:i',
-            'end_time' => 'sometimes|date_format:H:i|after:start_time',
+          
             'employes_ids' => 'sometimes|array',
             'employes_ids.*' => 'integer|exists:employes,id',
         ];

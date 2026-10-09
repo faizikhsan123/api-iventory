@@ -1,3 +1,4 @@
+```php
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -8,23 +9,35 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('trainings', function (Blueprint $table) {
-            $table->dropColumn('date');
-        });
+        // Hapus kolom date jika masih ada di tabel trainings
+        if (Schema::hasColumn('trainings', 'date')) {
+            Schema::table('trainings', function (Blueprint $table) {
+                $table->dropColumn('date');
+            });
+        }
 
-        Schema::table('training_participants', function (Blueprint $table) {
-            $table->date('date')->nullable()->after('employes_id');
-        });
+        // Tambahkan kolom date jika belum ada
+        if (!Schema::hasColumn('training_participants', 'date')) {
+            Schema::table('training_participants', function (Blueprint $table) {
+                $table->date('date')->nullable()->after('employes_id');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('training_participants', function (Blueprint $table) {
-            $table->dropColumn('date');
-        });
+        // Hapus kolom date dari training_participants jika ada
+        if (Schema::hasColumn('training_participants', 'date')) {
+            Schema::table('training_participants', function (Blueprint $table) {
+                $table->dropColumn('date');
+            });
+        }
 
-        Schema::table('trainings', function (Blueprint $table) {
-            $table->dateTime('date')->nullable();
-        });
+        // Kembalikan kolom date ke trainings jika belum ada
+        if (!Schema::hasColumn('trainings', 'date')) {
+            Schema::table('trainings', function (Blueprint $table) {
+                $table->dateTime('date')->nullable();
+            });
+        }
     }
 };

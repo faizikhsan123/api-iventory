@@ -16,7 +16,7 @@ class Training extends Model
         'id_training',
         'division_training',
         'name_training',
-        'created_by',
+        'by',
         'date',
     ];
 

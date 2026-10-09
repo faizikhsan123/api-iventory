@@ -12,8 +12,7 @@ class group extends Model
 
     protected $fillable = [
         'name_group',
-        'start_time',
-        'end_time',
+      
     ];
 
     // satu grup bisa memiliki banyak employes

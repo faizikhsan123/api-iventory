@@ -26,7 +26,7 @@ class UpdateTrainingRequest extends FormRequest
             'id_training' => 'sometimes|string|max:255',
             'division_training' => 'sometimes|in:Gas Analyzer,I&C-PMR,I&C-ER,Safety',
             'name_training' => 'sometimes|string|max:255',
-            'created_by' => 'sometimes|string|max:30',
+            'by' => 'sometimes|string|max:30',
             // 'date' => 'sometimes|date_format:Y-m-d',
 
         ];

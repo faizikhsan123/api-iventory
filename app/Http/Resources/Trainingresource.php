@@ -20,7 +20,7 @@ class Trainingresource extends JsonResource
             'id_training' => $this->id_training,
             'division_training' => $this->division_training,
             'name_training' => $this->name_training,
-            'created_by' => $this->created_by,
+            'by' => $this->by,
             // 'date' => Carbon::parse($this->date)->translatedFormat('d F Y'),
             // 'date_raw' => Carbon::parse($this->date)->format('Y-m-d'),
             'participants_count' => $this->whenCounted('participants'),

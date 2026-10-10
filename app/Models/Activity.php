@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\ActivityFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
-    /** @use HasFactory<\Database\Factories\ActivityFactory> */
+    /** @use HasFactory<ActivityFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -15,7 +16,7 @@ class Activity extends Model
         'activity',
         'detail',
         'date',
-        'type'
+        'type',
     ];
 
     public function user()

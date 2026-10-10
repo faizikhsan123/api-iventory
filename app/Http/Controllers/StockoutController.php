@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStockOutRequest;
-use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\Transaction;
@@ -58,7 +57,6 @@ class StockOutController extends Controller
                     'unit_price' => StockValuation::snapshotOut($item),
                 ]);
 
-             
             }
 
             return $transaction;

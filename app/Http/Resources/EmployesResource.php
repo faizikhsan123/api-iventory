@@ -30,7 +30,15 @@ class EmployesResource extends JsonResource
             'actual_address' => $this->actual_address,
             'emergency_contact' => $this->emergency_contact,
             'user' => $this->whenLoaded('user'),
-            'given_items_count' => $this->given_items_count ?? 0,
+            'ppe_sizes' => [
+                'shoes' => $this->ppe_shoes,
+                'coverall' => $this->ppe_coverall,
+                'wearpack' => $this->ppe_wearpack,
+                'respirator' => $this->ppe_respirator,
+                'vest' => $this->ppe_vest,
+                'gloves' => $this->ppe_gloves,
+            ],
+            'cpd' => $this->whenLoaded('cpd', fn () => $this->cpd ? new EmployeeCpdResource($this->cpd) : null),
             'items' => $this->whenLoaded('transactionItems', function () {
                 return $this->transactionItems
                     ->groupBy('transactions_id')   // FK ke transaction, sesuaikan nama kolomnya

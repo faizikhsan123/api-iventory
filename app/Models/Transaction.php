@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,7 +13,7 @@ class Transaction extends Model
         'transaction_number',
         'date',
         'employes_id',
-        'note'
+        'note',
     ];
 
     public function employes()
@@ -26,9 +25,9 @@ class Transaction extends Model
     {
         return $this->hasMany(TransactionItem::class, 'transactions_id');
     }
-    
-     public function stock_history(){
+
+    public function stock_history()
+    {
         return $this->hasMany(StockHistory::class);
     }
-
 }

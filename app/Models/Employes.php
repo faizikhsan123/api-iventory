@@ -26,6 +26,12 @@ class Employes extends Model
         'ktp_address',
         'actual_address',
         'emergency_contact',
+        'ppe_shoes',
+        'ppe_coverall',
+        'ppe_wearpack',
+        'ppe_respirator',
+        'ppe_vest',
+        'ppe_gloves',
     ];
 
     protected $casts = [
@@ -33,6 +39,12 @@ class Employes extends Model
         'contract_end' => 'date:Y-m-d',
         'left_at' => 'date:Y-m-d',
     ];
+
+    // data CPD karyawan, satu baris per karyawan
+    public function cpd()
+    {
+        return $this->hasOne(EmployeeCpd::class, 'employes_id');
+    }
 
     // riwayat medical check up
     public function mcus()
@@ -71,7 +83,7 @@ class Employes extends Model
         return $this->hasMany(Transaction::class);
     }
 
-    // satu karyawan bisa banya ikut raining datanya diambil darti employess_id 
+    // satu karyawan bisa banya ikut raining datanya diambil darti employess_id
     public function trainingParticipants()
     {
         return $this->hasMany(TrainingParticipant::class, 'employes_id');

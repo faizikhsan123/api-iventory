@@ -73,7 +73,7 @@ class TrainingParticipantController extends Controller
             'File tidak ditemukan'
         );
 
-        return response()->file(storage_path('app/public/' . $participant->file));
+        return response()->file(storage_path('app/public/'.$participant->file));
     }
 
     public function destroy(TrainingParticipant $participant)

@@ -18,6 +18,9 @@ class InvoiceController extends Controller
     {
         $perPage = max(1, min($request->integer('per_page', 10), 100));
 
+        // urut berdasarkan tahapan (whitelist asc|desc); selain itu abaikan
+        $sortStatus = in_array($request->input('sort_status'), ['asc', 'desc'], true) ? $request->input('sort_status') : null;
+
         $invoices = Invoice::query()
             ->when($request->filled('division'), fn ($q) => $q->where('division', $request->input('division')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
@@ -25,9 +28,13 @@ class InvoiceController extends Controller
                 $search = $request->input('search');
                 $q->where(function ($w) use ($search) {
                     $w->where('invoice_number', 'like', "%{$search}%")
-                        ->orWhere('title', 'like', "%{$search}%")
+                        ->orWhere('service_name', 'like', "%{$search}%")
                         ->orWhere('client', 'like', "%{$search}%");
                 });
+            })
+            ->when($sortStatus, function ($q) use ($sortStatus) {
+                $placeholders = implode(',', array_fill(0, count(Invoice::STATUSES), '?'));
+                $q->orderByRaw("FIELD(status, {$placeholders}) {$sortStatus}", Invoice::STATUSES);
             })
             ->latest('id')
             ->paginate($perPage);
@@ -73,7 +80,7 @@ class InvoiceController extends Controller
     public function store(InvoiceRequest $request)
     {
         $data = $request->validated();
-        $status = $data['status'] ?? 'draft';
+        $status = $data['status'] ?? 'drafting_timesheet';
 
         $invoice = DB::transaction(function () use ($data, $status) {
             $invoice = Invoice::create([...$data, 'status' => $status]);
@@ -88,7 +95,7 @@ class InvoiceController extends Controller
             return $invoice;
         });
 
-        $this->logActivity('Menambah Invoice', "Invoice {$invoice->title} ({$invoice->division}) berhasil ditambahkan");
+        $this->logActivity('Menambah Invoice', "Invoice {$invoice->service_name} ({$invoice->division}) berhasil ditambahkan");
 
         return response()->json([
             'status' => 'success',
@@ -102,7 +109,7 @@ class InvoiceController extends Controller
         // status diubah lewat endpoint khusus supaya tercatat di riwayat
         $invoice->update(collect($request->validated())->except('status')->all());
 
-        $this->logActivity('Mengubah Invoice', "Invoice {$invoice->title} ({$invoice->division}) berhasil diubah");
+        $this->logActivity('Mengubah Invoice', "Invoice {$invoice->service_name} ({$invoice->division}) berhasil diubah");
 
         return response()->json([
             'status' => 'success',
@@ -127,7 +134,7 @@ class InvoiceController extends Controller
             ]);
         });
 
-        $this->logActivity('Update Status Invoice', "Invoice {$invoice->title} ({$invoice->division}) menjadi {$data['status']}");
+        $this->logActivity('Update Status Invoice', "Invoice {$invoice->service_name} ({$invoice->division}) menjadi {$data['status']}");
 
         return response()->json([
             'status' => 'success',
@@ -138,7 +145,7 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice)
     {
-        $label = "{$invoice->title} ({$invoice->division})";
+        $label = "{$invoice->service_name} ({$invoice->division})";
         $invoice->delete();
 
         $this->logActivity('Menghapus Invoice', "Invoice {$label} berhasil dihapus");

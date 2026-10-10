@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class BarangKeluarExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $start;
+
     protected $end;
 
     public function __construct($start = null, $end = null)
@@ -61,7 +62,7 @@ class BarangKeluarExport implements FromCollection, WithHeadings, WithMapping, W
 
         return [
             // $trx->transaction_number,
-        Carbon::parse($trx->date)->translatedFormat('d F Y'),
+            Carbon::parse($trx->date)->translatedFormat('d F Y'),
             $barang ?: '-',
             $trx->employes->user->name ?? '-',
             $trx->employes->division ?? '-',

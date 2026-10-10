@@ -23,7 +23,7 @@ class UpdateSupplierRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|min:4|max:50',   
+            'name' => 'required|string|min:4|max:50',
             'pic' => 'required|string|min:2|max:50',
             'spesialis' => 'required|in:apd,tools,others',
             'phone' => 'nullable|string|min:8|max:15',

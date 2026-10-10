@@ -24,7 +24,7 @@ class UpdategroupRequest extends FormRequest
     {
         return [
             'name_group' => 'sometimes|string|max:255',
-          
+
             'employes_ids' => 'sometimes|array',
             'employes_ids.*' => 'integer|exists:employes,id',
         ];

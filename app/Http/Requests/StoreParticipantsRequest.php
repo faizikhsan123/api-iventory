@@ -16,7 +16,7 @@ class StoreParticipantsRequest extends FormRequest
         return [
             'employes_ids' => 'required|array|min:1',
             'employes_ids.*' => 'integer|exists:employes,id',
-             'date' => 'required|date_format:Y-m-d',
+            'date' => 'required|date_format:Y-m-d',
         ];
     }
 }

@@ -25,9 +25,11 @@ class EmployesFactory extends Factory
           
 
             'division' => fake()->randomElement([
-                'GA',
-                'INC-PMR',
-                'INC-ER',
+                'Gas Analyzer',
+                'I&C-PMR',
+                'I&C-ER',
+                'Dryer',
+                'Safety',
             ]),
 
             'position' => fake()->randomElement([

@@ -12,15 +12,16 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
 {
-  // pakai Facades, bukan class Excel langsung
+    // pakai Facades, bukan class Excel langsung
 
-public function export(Request $request)
-{
-    return Excel::download(
-        new BarangKeluarExport($request->start, $request->end),
-        'barang-keluar-'.now()->format('Y-m-d_His').'.xlsx'
-    );
-}
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new BarangKeluarExport($request->start, $request->end),
+            'barang-keluar-'.now()->format('Y-m-d_His').'.xlsx'
+        );
+    }
+
     public function index(Request $request)
     {
         $query = Transaction::with(['employes.user', 'transaction_items.item']);

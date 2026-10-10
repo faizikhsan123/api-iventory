@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class PenerimaanStokExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $start;
+
     protected $end;
 
     public function __construct($start = null, $end = null)

@@ -2,35 +2,37 @@
 
 namespace App\Models;
 
+use Database\Factories\StockHistoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class StockHistory extends Model
 {
-    /** @use HasFactory<\Database\Factories\StockHistoryFactory> */
+    /** @use HasFactory<StockHistoryFactory> */
     use HasFactory;
 
     protected $fillable = [
         'item_id',
-        'supplier_id', 
+        'supplier_id',
         'qty',
         'type',
         'note',
         'date',
-        'user_id'
+        'user_id',
     ];
 
-    public function item(){
+    public function item()
+    {
         return $this->belongsTo(Item::class, 'item_id');
     }
 
-    public function supplier(){
+    public function supplier()
+    {
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-    
 }

@@ -35,6 +35,3 @@ class StoreStockHistoryRequest extends FormRequest
         ];
     }
 }
-
-
-

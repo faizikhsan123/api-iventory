@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    // ambang pengingat kontrak berakhir & MCU berikutnya (hari)
+    public const DUE_DAYS = 30;
+
     public function summary(Request $request)
     {
         // 1. Total Barang
@@ -63,12 +66,12 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Kontrak karyawan aktif yang berakhir <= 14 hari lagi (termasuk yang sudah lewat)
+        // Kontrak karyawan aktif yang berakhir <= 30 hari lagi (termasuk yang sudah lewat)
         $today = now()->startOfDay();
         $kontrakBerakhir = Employes::with(['user', 'group'])
             ->where('status', 'active')
             ->whereNotNull('contract_end')
-            ->whereDate('contract_end', '<=', $today->copy()->addDays(14))
+            ->whereDate('contract_end', '<=', $today->copy()->addDays(self::DUE_DAYS))
             ->orderBy('contract_end')
             ->get()
             ->map(fn ($e) => [
@@ -82,11 +85,11 @@ class DashboardController extends Controller
                 'days_left' => (int) $today->diffInDays($e->contract_end->startOfDay(), false),
             ]);
 
-        // MCU berikutnya <= 14 hari lagi (termasuk lewat); hanya MCU terbaru tiap karyawan aktif
+        // MCU berikutnya <= 30 hari lagi (termasuk lewat); hanya MCU terbaru tiap karyawan aktif
         $mcuBerikutnya = Mcu::with(['employes.user', 'employes.group'])
             ->whereHas('employes', fn ($q) => $q->where('status', 'active'))
             ->whereNotNull('next_mcu_date')
-            ->whereDate('next_mcu_date', '<=', $today->copy()->addDays(14))
+            ->whereDate('next_mcu_date', '<=', $today->copy()->addDays(self::DUE_DAYS))
             ->whereNotExists(function ($q) {
                 $q->selectRaw('1')->from('mcus as newer')
                     ->whereColumn('newer.employes_id', 'mcus.employes_id')

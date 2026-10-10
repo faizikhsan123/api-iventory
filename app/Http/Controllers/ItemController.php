@@ -40,12 +40,12 @@ class ItemController extends Controller
     }
 
     public function exportStockOnHand(Request $request)
-{
-    return Excel::download(
-        new StockOnHandExport($request->input('search'), $request->input('category')),
-        'stock-on-hand-'.now()->format('Y-m-d_His').'.xlsx'
-    );
-}
+    {
+        return Excel::download(
+            new StockOnHandExport($request->input('search'), $request->input('category')),
+            'stock-on-hand-'.now()->format('Y-m-d_His').'.xlsx'
+        );
+    }
 
     public function index(Request $request)
     {

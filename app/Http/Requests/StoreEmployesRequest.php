@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Division;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreEmployesRequest extends FormRequest
 {
@@ -38,7 +40,7 @@ class StoreEmployesRequest extends FormRequest
 
             'division' => [
                 'required',
-                'in:Gas Analyzer,I&C-PMR,I&C-ER',
+                Rule::in(Division::values()),
             ],
 
             'position' => [
@@ -69,6 +71,17 @@ class StoreEmployesRequest extends FormRequest
                 'min:10',
                 'max:20',
             ],
+
+            'ppe_shoes' => ['nullable', 'string', 'max:30'],
+            'ppe_coverall' => ['nullable', 'string', 'max:30'],
+            'ppe_wearpack' => ['nullable', 'string', 'max:30'],
+            'ppe_respirator' => ['nullable', 'string', 'max:30'],
+            'ppe_vest' => ['nullable', 'string', 'max:30'],
+            'ppe_gloves' => ['nullable', 'string', 'max:30'],
+
+            // data CPD (opsional)
+            'cpd' => ['nullable', 'array'],
+            ...EmployeeCpdRequest::build('cpd.'),
         ];
     }
 }

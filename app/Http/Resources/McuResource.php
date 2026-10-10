@@ -20,6 +20,7 @@ class McuResource extends JsonResource
             'mcu_name' => $this->mcu_name,
             'mcu_date' => $this->mcu_date?->format('Y-m-d'),
             'document' => $this->document,
+            'document_2' => $this->document_2,
             'summary' => $this->summary,
             'allergies' => $this->allergies,
             'next_mcu_date' => $this->next_mcu_date?->format('Y-m-d'),

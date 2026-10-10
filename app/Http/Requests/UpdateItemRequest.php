@@ -30,10 +30,10 @@ class UpdateItemRequest extends FormRequest
             'type' => 'nullable|max:50|string',
             'min_stock' => 'nullable|numeric',
             'part_number' => 'nullable|string|max:50',
-        //    'size' => 'nullable|string',
+            //    'size' => 'nullable|string',
             'unit' => 'required|in:pcs,set,unit,pair,others',
-        'price' => 'nullable|numeric|min:0',
-            'description' => 'nullable|max:200'
+            'price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|max:200',
 
         ];
     }

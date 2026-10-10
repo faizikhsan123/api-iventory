@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class recordPengeluaran implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $start;
+
     protected $end;
 
     public function __construct($start = null, $end = null)
@@ -37,7 +38,7 @@ class recordPengeluaran implements FromCollection, WithHeadings, WithMapping, Wi
             ->map(function ($item, $i) {
                 $item->rank = $i + 1;
 
-                return $item;   
+                return $item;
             });
     }
 

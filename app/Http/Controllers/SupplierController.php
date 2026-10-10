@@ -163,7 +163,7 @@ class SupplierController extends Controller
             'user_id' => Auth::user()->id,
             'activity' => 'Menghapus Supplier',
             'detail' => "Supplier {$supplier['name']} Berhasil Dihapus",
-            'type' =>null,
+            'type' => null,
             'date' => now(),
         ]);
 

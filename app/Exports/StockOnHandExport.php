@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class StockOnHandExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $search;
+
     protected $category;
 
     public function __construct($search = null, $category = null)

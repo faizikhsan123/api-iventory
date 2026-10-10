@@ -14,6 +14,7 @@ class Mcu extends Model
         'mcu_name',
         'mcu_date',
         'document',
+        'document_2',
         'summary',
         'allergies',
         'next_mcu_date',

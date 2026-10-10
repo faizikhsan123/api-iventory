@@ -13,6 +13,15 @@ class McuController extends Controller
 {
     use LogsActivity;
 
+    private const SLOTS = ['document', 'document_2'];
+
+    private function deleteFile(?string $path): void
+    {
+        if ($path) {
+            Storage::disk('public')->delete($path);
+        }
+    }
+
     public function index(Request $request)
     {
         $perPage = max(1, min($request->integer('per_page', 10), 100));
@@ -57,8 +66,11 @@ class McuController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('document')) {
-            $data['document'] = $request->file('document')->store('mcu', 'public');
+        foreach (self::SLOTS as $slot) {
+            unset($data["remove_{$slot}"]);
+            if ($request->hasFile($slot)) {
+                $data[$slot] = $request->file($slot)->store('mcu', 'public');
+            }
         }
 
         $mcu = Mcu::create($data);
@@ -72,13 +84,19 @@ class McuController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('document')) {
-            if ($mcu->document) {
-                Storage::disk('public')->delete($mcu->document);
+        foreach (self::SLOTS as $slot) {
+            $remove = $request->boolean("remove_{$slot}");
+            unset($data["remove_{$slot}"]);
+
+            if ($request->hasFile($slot)) {
+                $this->deleteFile($mcu->{$slot});
+                $data[$slot] = $request->file($slot)->store('mcu', 'public');
+            } elseif ($remove) {
+                $this->deleteFile($mcu->{$slot});
+                $data[$slot] = null;
+            } else {
+                unset($data[$slot]); // dokumen lama dipertahankan
             }
-            $data['document'] = $request->file('document')->store('mcu', 'public');
-        } else {
-            unset($data['document']); // dokumen lama dipertahankan
         }
 
         $mcu->update($data);
@@ -92,8 +110,8 @@ class McuController extends Controller
     {
         $name = $this->employeeName($mcu);
 
-        if ($mcu->document) {
-            Storage::disk('public')->delete($mcu->document);
+        foreach (self::SLOTS as $slot) {
+            $this->deleteFile($mcu->{$slot});
         }
 
         $mcu->delete();

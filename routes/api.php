@@ -2,16 +2,16 @@
 
     use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmployesController;
 use App\Http\Controllers\ContractController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\McuController;
-use App\Http\Controllers\RfqController;
-use App\Http\Controllers\TurnoverController;
-use App\Http\Controllers\PerformanceReviewController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeCpdController;
+use App\Http\Controllers\EmployesController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\McuController;
+use App\Http\Controllers\PerformanceReviewController;
+use App\Http\Controllers\RfqController;
 use App\Http\Controllers\StockHistoryController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\SupplierController;
@@ -19,6 +19,7 @@ use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\TrainingParticipantController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionItemController;
+use App\Http\Controllers\TurnoverController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('suppliers', SupplierController::class);
 
     Route::get('/employes/{employe}/detail', [EmployesController::class, 'detail']);
+    Route::get('/employes/{employe}/cpd', [EmployeeCpdController::class, 'show']);
     Route::get('/employes/{employe}/performance-reviews', [PerformanceReviewController::class, 'index']);
 
     // rfq (log permintaan penawaran): semua user login boleh lihat, ubah khusus admin
@@ -68,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/contracts/{employe}/renewals', [ContractController::class, 'storeRenewal']);
         Route::delete('/contract-renewals/{contractRenewal}', [ContractController::class, 'destroyRenewal']);
         Route::post('/employes/{employe}/performance-reviews', [PerformanceReviewController::class, 'store']);
+        Route::put('/employes/{employe}/cpd', [EmployeeCpdController::class, 'upsert']);
         Route::delete('/performance-reviews/{performanceReview}', [PerformanceReviewController::class, 'destroy']);
     });
 

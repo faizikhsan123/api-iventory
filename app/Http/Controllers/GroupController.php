@@ -14,7 +14,7 @@ class GroupController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {   
+    {
         $groups = group::with([
             'employes.user',
             'employes.performanceReviews',
@@ -44,10 +44,10 @@ class GroupController extends Controller
 
         $group = group::create([
             'name_group' => $data['name_group'],
-           
+
         ]);
 
-        // jika ada employes_ids, maka update group_id di tabel employes 
+        // jika ada employes_ids, maka update group_id di tabel employes
         if (! empty($data['employes_ids'])) {
             Employes::whereIn('id', $data['employes_ids'])
                 ->update(['group_id' => $group->id]);

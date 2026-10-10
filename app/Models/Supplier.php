@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\SupplierFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Supplier extends Model
 {
-    /** @use HasFactory<\Database\Factories\SupplierFactory> */
+    /** @use HasFactory<SupplierFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -17,10 +18,11 @@ class Supplier extends Model
         'phone',
         'email',
         'address',
-        'status'
+        'status',
     ];
 
-    public function stock_history(){
+    public function stock_history()
+    {
         return $this->hasMany(StockHistory::class);
     }
 }

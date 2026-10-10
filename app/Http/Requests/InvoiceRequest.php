@@ -18,7 +18,9 @@ class InvoiceRequest extends FormRequest
     {
         return [
             'invoice_number' => ['nullable', 'string', 'max:100'],
-            'title' => ['required', 'string', 'max:200'],
+            'service_name' => ['required', 'string', 'max:200'],
+            'service_date' => ['nullable', 'date'],
+            'service_description' => ['nullable', 'string', 'max:5000'],
             'division' => ['required', Rule::in(Invoice::DIVISIONS)],
             'client' => ['nullable', 'string', 'max:150'],
             'amount' => ['nullable', 'numeric', 'min:0', 'max:9999999999999'],

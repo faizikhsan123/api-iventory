@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Division;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTrainingRequest extends FormRequest
 {
@@ -24,7 +26,7 @@ class UpdateTrainingRequest extends FormRequest
     {
         return [
             'id_training' => 'sometimes|string|max:255',
-            'division_training' => 'sometimes|in:Gas Analyzer,I&C-PMR,I&C-ER,Safety',
+            'division_training' => ['sometimes', Rule::in(Division::values())],
             'name_training' => 'sometimes|string|max:255',
             'by' => 'sometimes|string|max:30',
             // 'date' => 'sometimes|date_format:Y-m-d',

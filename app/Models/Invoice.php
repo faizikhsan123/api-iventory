@@ -8,13 +8,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Invoice extends Model
 {
     // urutan tahapan invoice jasa (ubah di sini + fe-iventory/src/lib/invoice.ts kalau tahapannya berbeda)
-    public const STATUSES = ['draft', 'submitted', 'verified', 'paid'];
+    public const STATUSES = [
+        'drafting_timesheet',
+        'waiting_approved_timesheet',
+        'waiting_service_receipt',
+        'waiting_work_order',
+        'paid',
+    ];
 
-    public const DIVISIONS = ['PMR', 'ER', 'Gas', 'Dryer'];
+    public const DIVISIONS = ['Gas Analyzer', 'I&C-PMR', 'I&C-ER', 'Dryer', 'Safety'];
 
     protected $fillable = [
         'invoice_number',
-        'title',
+        'service_name',
+        'service_date',
+        'service_description',
         'division',
         'client',
         'amount',
@@ -25,6 +33,7 @@ class Invoice extends Model
 
     protected $casts = [
         'invoice_date' => 'date:Y-m-d',
+        'service_date' => 'date:Y-m-d',
         'amount' => 'float',
     ];
 

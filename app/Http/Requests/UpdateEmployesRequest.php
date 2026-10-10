@@ -60,6 +60,10 @@ class UpdateEmployesRequest extends FormRequest
                 'in:active,inactive',
             ],
 
+            'contract_start' => ['nullable', 'date'],
+            'contract_end' => ['nullable', 'date', 'after_or_equal:contract_start'],
+            'left_at' => ['nullable', 'date'],
+
             'ktp_address' => [
                 'nullable',
                 'string',

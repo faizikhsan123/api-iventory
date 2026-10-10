@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employes;
 use App\Models\Item;
+use App\Models\Mcu;
 use App\Models\StockHistory;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -61,6 +63,56 @@ class DashboardController extends Controller
                 ];
             });
 
+        // Kontrak karyawan aktif yang berakhir <= 14 hari lagi (termasuk yang sudah lewat)
+        $today = now()->startOfDay();
+        $kontrakBerakhir = Employes::with(['user', 'group'])
+            ->where('status', 'active')
+            ->whereNotNull('contract_end')
+            ->whereDate('contract_end', '<=', $today->copy()->addDays(14))
+            ->orderBy('contract_end')
+            ->get()
+            ->map(fn ($e) => [
+                'id' => $e->id,
+                'name' => $e->user->name ?? '-',
+                'id_number' => $e->id_number,
+                'division' => $e->division,
+                'position' => $e->position,
+                'group_name' => $e->group->name_group ?? null,
+                'contract_end' => $e->contract_end->format('Y-m-d'),
+                'days_left' => (int) $today->diffInDays($e->contract_end->startOfDay(), false),
+            ]);
+
+        // MCU berikutnya <= 14 hari lagi (termasuk lewat); hanya MCU terbaru tiap karyawan aktif
+        $mcuBerikutnya = Mcu::with(['employes.user', 'employes.group'])
+            ->whereHas('employes', fn ($q) => $q->where('status', 'active'))
+            ->whereNotNull('next_mcu_date')
+            ->whereDate('next_mcu_date', '<=', $today->copy()->addDays(14))
+            ->whereNotExists(function ($q) {
+                $q->selectRaw('1')->from('mcus as newer')
+                    ->whereColumn('newer.employes_id', 'mcus.employes_id')
+                    ->where(function ($w) {
+                        $w->whereColumn('newer.mcu_date', '>', 'mcus.mcu_date')
+                            ->orWhere(function ($same) {
+                                $same->whereColumn('newer.mcu_date', 'mcus.mcu_date')
+                                    ->whereColumn('newer.id', '>', 'mcus.id');
+                            });
+                    });
+            })
+            ->orderBy('next_mcu_date')
+            ->get()
+            ->map(fn ($m) => [
+                'id' => $m->id,
+                'employes_id' => $m->employes_id,
+                'name' => $m->employes->user->name ?? '-',
+                'id_number' => $m->employes->id_number,
+                'division' => $m->employes->division,
+                'position' => $m->employes->position,
+                'group_name' => $m->employes->group->name_group ?? null,
+                'place_name' => $m->place_name,
+                'next_mcu_date' => $m->next_mcu_date->format('Y-m-d'),
+                'days_left' => (int) $today->diffInDays($m->next_mcu_date->copy()->startOfDay(), false),
+            ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Data Dashboard Ditemukan',
@@ -74,6 +126,8 @@ class DashboardController extends Controller
                 ],
                 'aktivitas_stok' => $aktivitasStok,
                 'transaksi_terbaru' => $transaksiTerbaru,
+                'kontrak_berakhir' => $kontrakBerakhir,
+                'mcu_berikutnya' => $mcuBerikutnya,
             ],
         ]);
     }

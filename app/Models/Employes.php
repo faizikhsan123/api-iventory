@@ -20,10 +20,37 @@ class Employes extends Model
         'division',
         'position',
         'status',
+        'contract_start',
+        'contract_end',
+        'left_at',
         'ktp_address',
         'actual_address',
         'emergency_contact',
     ];
+
+    protected $casts = [
+        'contract_start' => 'date:Y-m-d',
+        'contract_end' => 'date:Y-m-d',
+        'left_at' => 'date:Y-m-d',
+    ];
+
+    // riwayat medical check up
+    public function mcus()
+    {
+        return $this->hasMany(Mcu::class, 'employes_id');
+    }
+
+    // riwayat perpanjangan kontrak
+    public function contractRenewals()
+    {
+        return $this->hasMany(ContractRenewal::class, 'employes_id');
+    }
+
+    // satu karyawan banyak performance review
+    public function performanceReviews()
+    {
+        return $this->hasMany(PerformanceReview::class, 'employes_id');
+    }
 
     // satu karyawan sattu user
     public function user()

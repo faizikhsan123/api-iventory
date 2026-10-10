@@ -4,6 +4,12 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployesController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\McuController;
+use App\Http\Controllers\RfqController;
+use App\Http\Controllers\TurnoverController;
+use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\StockHistoryController;
@@ -27,6 +33,43 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('suppliers', SupplierController::class);
 
     Route::get('/employes/{employe}/detail', [EmployesController::class, 'detail']);
+    Route::get('/employes/{employe}/performance-reviews', [PerformanceReviewController::class, 'index']);
+
+    // rfq (log permintaan penawaran): semua user login boleh lihat, ubah khusus admin
+    Route::get('/rfqs/options', [RfqController::class, 'options']);
+    Route::apiResource('rfqs', RfqController::class)->only(['index', 'show']);
+
+    Route::middleware('role:admin')->group(function () {
+        Route::apiResource('rfqs', RfqController::class)->except(['index', 'show']);
+        Route::post('/rfqs/{rfq}/updates', [RfqController::class, 'addUpdate']);
+        Route::delete('/rfq-updates/{rfqUpdate}', [RfqController::class, 'destroyUpdate']);
+    });
+
+    // invoicing (tracking invoice jasa): semua user login boleh lihat, ubah khusus admin
+    Route::apiResource('invoices', InvoiceController::class)->only(['index', 'show']);
+
+    Route::middleware('role:admin')->group(function () {
+        Route::apiResource('invoices', InvoiceController::class)->except(['index', 'show']);
+        Route::post('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus']);
+    });
+
+    // mcu: semua user login boleh lihat, tambah/ubah/hapus khusus admin
+    Route::apiResource('mcus', McuController::class)->only(['index', 'show']);
+
+    Route::middleware('role:admin')->group(function () {
+        Route::apiResource('mcus', McuController::class)->except(['index', 'show']);
+    });
+
+    // contract: semua user login boleh lihat, perpanjang/hapus khusus admin
+    Route::get('/contracts', [ContractController::class, 'index']);
+    Route::get('/contracts/{employe}', [ContractController::class, 'show']);
+
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/contracts/{employe}/renewals', [ContractController::class, 'storeRenewal']);
+        Route::delete('/contract-renewals/{contractRenewal}', [ContractController::class, 'destroyRenewal']);
+        Route::post('/employes/{employe}/performance-reviews', [PerformanceReviewController::class, 'store']);
+        Route::delete('/performance-reviews/{performanceReview}', [PerformanceReviewController::class, 'destroy']);
+    });
 
     // employees
     // semua user login boleh lihat
@@ -81,6 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
 
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('/dashboard/turnover', [TurnoverController::class, 'index']);
 
     // group
     Route::apiResource('groups', GroupController::class);

@@ -15,7 +15,10 @@ class GroupController extends Controller
      */
     public function index()
     {   
-        $groups = group::with('employes.user')->latest()->get();
+        $groups = group::with([
+            'employes.user',
+            'employes.performanceReviews',
+        ])->latest()->get();
 
         return response()->json([
             'status' => 'success',
@@ -62,7 +65,7 @@ class GroupController extends Controller
      */
     public function show(group $group)
     {
-        $group->load('employes.user');
+        $group->load(['employes.user', 'employes.performanceReviews']);
 
         return response()->json([
             'status' => 'success',

@@ -46,6 +46,9 @@ class StoreEmployesRequest extends FormRequest
                 'in:Technician,Supervisor,Foreman,Safety',
             ],
 
+            'contract_start' => ['required', 'date'],
+            'contract_end' => ['required', 'date', 'after_or_equal:contract_start'],
+
             'ktp_address' => [
                 'nullable',
                 'string',

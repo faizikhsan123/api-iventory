@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEmployesRequest;
 use App\Http\Requests\UpdateEmployesRequest;
 use App\Http\Resources\EmployesResource;
+use App\Http\Resources\McuResource;
 use App\Models\Activity;
 use App\Models\Employes;
+use App\Models\Mcu;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,11 +26,7 @@ class EmployesController extends Controller
         ));
 
         $query = Employes::query()
-            ->with([
-                'user',
-                'transactionItems.item',
-                'transactionItems.transaction',
-            ])
+            ->with('user')
             ->withSum('transactionItems as given_items_count', 'qty');
 
         // filter search nama
@@ -70,7 +68,7 @@ class EmployesController extends Controller
 
     public function detail(Employes $employe)
     {
-        $employe->load('user');
+        $employe->load(['user', 'group'])->loadCount('contractRenewals');
 
         $transactionItems = $employe->transactionItems()
             ->with(['transaction', 'item'])
@@ -78,6 +76,9 @@ class EmployesController extends Controller
             ->get();
 
         $totalBarang = $transactionItems->sum('qty');
+
+        $mcus = $employe->mcus()->latest('mcu_date')->latest('id')->get();
+        Mcu::flagLatest($mcus);
 
         return response()->json([
             'success' => true,
@@ -89,7 +90,15 @@ class EmployesController extends Controller
                     'division' => $employe->division,
                     'position' => $employe->position,
                     'status' => $employe->status,
+                    'ktp_address' => $employe->ktp_address,
+                    'actual_address' => $employe->actual_address,
+                    'emergency_contact' => $employe->emergency_contact,
+                    'group_name' => $employe->group->name_group ?? null,
+                    'contract_renewals' => (int) $employe->contract_renewals_count,
+                    'contract_start' => optional($employe->contract_start)->format('Y-m-d'),
+                    'contract_end' => optional($employe->contract_end)->format('Y-m-d'),
                 ],
+                'mcus' => McuResource::collection($mcus),
                 'statistik' => [
                     'total_barang_diterima' => (int) $totalBarang,
                 ],
@@ -134,6 +143,8 @@ class EmployesController extends Controller
             'division' => $data['division'],
             'position' => $data['position'],
             'status' => 'active',
+            'contract_start' => $data['contract_start'] ?? null,
+            'contract_end' => $data['contract_end'] ?? null,
             'ktp_address' => $data['ktp_address'] ?? null,
             'actual_address' => $data['actual_address'] ?? null,
             'emergency_contact' => $data['emergency_contact'] ?? null,
@@ -205,6 +216,12 @@ class EmployesController extends Controller
             'division' => $validated['division'],
             'position' => $validated['position'],
             'status' => $validated['status'],
+            // inactive: pakai tanggal keluar yang diisi, lalu yang sudah tersimpan, lalu hari ini; active: dikosongkan
+            'left_at' => $validated['status'] === 'inactive'
+                ? ($validated['left_at'] ?? $employe->left_at?->format('Y-m-d') ?? now()->toDateString())
+                : null,
+            'contract_start' => $validated['contract_start'] ?? null,
+            'contract_end' => $validated['contract_end'] ?? null,
             'ktp_address' => $validated['ktp_address'] ?? null,
             'actual_address' => $validated['actual_address'] ?? null,
             'emergency_contact' => $validated['emergency_contact'] ?? null,

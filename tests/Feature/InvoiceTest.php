@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\Division;
 use App\Models\Invoice;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\ApiHelpers;
@@ -27,8 +26,8 @@ class InvoiceTest extends TestCase
 
     public function test_constants_match_agreed_values(): void
     {
-        $this->assertSame(['drafting_timesheet', 'waiting_approved_timesheet', 'waiting_service_receipt', 'waiting_work_order', 'paid'], Invoice::STATUSES);
-        $this->assertSame(Division::values(), Invoice::DIVISIONS);
+        $this->assertSame(['drafting_timesheet', 'waiting_approved_timesheet', 'waiting_quote_or_invoicing', 'waiting_service_receipt', 'waiting_work_order', 'paid'], Invoice::STATUSES);
+        $this->assertSame(['Gas Analyzer', 'I&C-PMR', 'I&C-ER', 'Dryer'], Invoice::DIVISIONS);
     }
 
     public function test_store_defaults_to_drafting_timesheet_and_maps_service_fields(): void
@@ -54,6 +53,13 @@ class InvoiceTest extends TestCase
         $this->postJson('/api/invoices', $this->payload(['division' => 'PMR']))->assertStatus(422)->assertJsonValidationErrors('division');
     }
 
+    public function test_safety_division_is_rejected_on_create(): void
+    {
+        $this->actingAsAdmin();
+
+        $this->postJson('/api/invoices', $this->payload(['division' => 'Safety']))->assertStatus(422)->assertJsonValidationErrors('division');
+    }
+
     public function test_non_admin_cannot_write(): void
     {
         $this->actingAsViewer();
@@ -70,13 +76,20 @@ class InvoiceTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.status', 'waiting_work_order');
 
+        $this->postJson("/api/invoices/{$id}/status", ['status' => 'waiting_quote_or_invoicing', 'status_date' => '2026-10-08'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'waiting_quote_or_invoicing');
+        $this->assertDatabaseHas('invoice_status_logs', ['invoice_id' => $id, 'status' => 'waiting_quote_or_invoicing']);
+
+        $this->postJson("/api/invoices/{$id}/status", ['status' => 'waiting_work_order', 'status_date' => '2026-10-09'])->assertOk();
+
         $this->postJson("/api/invoices/{$id}/status", ['status' => 'bogus', 'status_date' => '2026-10-09'])->assertStatus(422);
     }
 
     public function test_sort_status_orders_by_stage_and_ignores_invalid_value(): void
     {
         $this->actingAsViewer();
-        foreach (['paid', 'drafting_timesheet', 'waiting_work_order', 'waiting_approved_timesheet', 'waiting_service_receipt'] as $s) {
+        foreach (['paid', 'drafting_timesheet', 'waiting_work_order', 'waiting_approved_timesheet', 'waiting_quote_or_invoicing', 'waiting_service_receipt'] as $s) {
             Invoice::create($this->payload(['status' => $s]));
         }
 
@@ -87,19 +100,19 @@ class InvoiceTest extends TestCase
         $this->assertSame(array_reverse(Invoice::STATUSES), $desc);
 
         // nilai tidak valid diabaikan: urut id terbaru (paid dibuat pertama jadi terakhir)
-        $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.4.status', 'paid');
+        $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.5.status', 'paid');
     }
 
     public function test_search_by_service_name_and_summary_follow_constants(): void
     {
         $this->actingAsViewer();
         Invoice::create($this->payload(['service_name' => 'Unik Banget', 'status' => 'paid']));
-        Invoice::create($this->payload(['service_name' => 'Lain', 'division' => 'Safety']));
+        Invoice::create($this->payload(['service_name' => 'Lain', 'division' => 'Dryer']));
 
         $res = $this->getJson('/api/invoices?search=Unik')->assertOk();
         $res->assertJsonCount(1, 'data');
         $this->assertSame(Invoice::STATUSES, array_keys($res->json('summary.by_status')));
         $this->assertSame(Invoice::DIVISIONS, array_keys($res->json('summary.by_division')));
-        $this->assertSame(1, $res->json('summary.by_division.Safety'));
+        $this->assertSame(2, $res->json('summary.by_division.Dryer'));
     }
 }

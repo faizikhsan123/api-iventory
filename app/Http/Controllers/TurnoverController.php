@@ -15,16 +15,23 @@ class TurnoverController extends Controller
      *
      * ?year=2026            -> per tahun
      * ?year=2026&month=10   -> per bulan
+     * ?year=2026&months[]=1&months[]=3 -> gabungan beberapa bulan: total keluar di bulan terpilih /
+     *   rata-rata (headcount awal bulan paling awal + headcount akhir bulan paling akhir)
      */
     public function index(Request $request)
     {
         $data = $request->validate([
             'year' => ['nullable', 'integer', 'between:2000,2100'],
             'month' => ['nullable', 'integer', 'between:1,12'],
+            'months' => ['nullable', 'array', 'max:12'],
+            'months.*' => ['integer', 'between:1,12', 'distinct'],
         ]);
 
         $year = (int) ($data['year'] ?? now()->year);
-        $month = isset($data['month']) ? (int) $data['month'] : null;
+        // bulan terpilih: months[] (baru) atau month (lama), diurutkan
+        $months = collect($data['months'] ?? (isset($data['month']) ? [$data['month']] : []))
+            ->map(fn ($m) => (int) $m)->unique()->sort()->values();
+        $month = $months->count() === 1 ? $months->first() : null;
 
         // tanggal masuk = contract_start, kalau kosong pakai tanggal data dibuat
         // tanggal keluar = left_at, kalau karyawan inactive tapi belum ada tanggal pakai tanggal terakhir diubah
@@ -51,12 +58,14 @@ class TurnoverController extends Controller
             fn ($p) => $p['joined']->lte($date) && ($p['left'] === null || $p['left']->gt($date))
         )->count();
 
-        $calc = function (Carbon $from, Carbon $to) use ($people, $headcountAt) {
+        // $inRange: true bila tanggal jatuh di salah satu bulan terpilih (bulan boleh tidak berurutan)
+        $calc = function (Carbon $from, Carbon $to, ?callable $inRange = null) use ($people, $headcountAt) {
+            $inRange ??= fn (Carbon $d) => $d->between($from, $to);
             $start = $headcountAt($from->copy()->subDay());
             $end = $headcountAt($to);
             $avg = ($start + $end) / 2;
-            $left = $people->filter(fn ($p) => $p['left'] && $p['left']->between($from, $to))->count();
-            $joined = $people->filter(fn ($p) => $p['joined']->between($from, $to))->count();
+            $left = $people->filter(fn ($p) => $p['left'] && $inRange($p['left']))->count();
+            $joined = $people->filter(fn ($p) => $inRange($p['joined']))->count();
 
             return [
                 'headcount_start' => $start,
@@ -69,10 +78,14 @@ class TurnoverController extends Controller
         };
 
         // periode terpilih
-        if ($month) {
-            $from = Carbon::create($year, $month, 1)->startOfDay();
-            $to = $from->copy()->endOfMonth()->startOfDay();
-            $label = $from->locale('id')->translatedFormat('F Y');
+        $inRange = null;
+        if ($months->isNotEmpty()) {
+            $from = Carbon::create($year, $months->first(), 1)->startOfDay();
+            $to = Carbon::create($year, $months->last(), 1)->endOfMonth()->startOfDay();
+            $label = $months->count() === 1
+                ? $from->copy()->locale('id')->translatedFormat('F Y')
+                : $months->map(fn ($m) => Carbon::create($year, $m, 1)->locale('id')->translatedFormat('M'))->implode(', ')." {$year}";
+            $inRange = fn (Carbon $d) => $d->year === $year && $months->contains($d->month);
         } else {
             $from = Carbon::create($year, 1, 1)->startOfDay();
             $to = Carbon::create($year, 12, 31)->startOfDay();
@@ -101,8 +114,9 @@ class TurnoverController extends Controller
             ];
         })->values();
 
+        $inRange ??= fn (Carbon $d) => $d->between($from, $to);
         $leftEmployees = $people
-            ->filter(fn ($p) => $p['left'] && $p['left']->between($from, $to))
+            ->filter(fn ($p) => $p['left'] && $inRange($p['left']))
             ->sortBy('left')
             ->map(fn ($p) => [
                 'id' => $p['id'],
@@ -121,8 +135,8 @@ class TurnoverController extends Controller
             'success' => true,
             'message' => 'Data Turn Over Rate Ditemukan',
             'data' => [
-                'period' => ['year' => $year, 'month' => $month, 'label' => $label],
-                'summary' => $calc($from, $to),
+                'period' => ['year' => $year, 'month' => $month, 'months' => $months->all(), 'label' => $label],
+                'summary' => $calc($from, $to, $inRange),
                 'monthly' => $monthly,
                 'left_employees' => $leftEmployees,
                 'years' => $years,

@@ -68,7 +68,6 @@ class StoreEmployesRequest extends FormRequest
             'emergency_contact' => [
                 'nullable',
                 'string',
-                'min:10',
                 'max:20',
             ],
 

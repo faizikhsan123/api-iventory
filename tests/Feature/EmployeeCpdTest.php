@@ -186,4 +186,40 @@ class EmployeeCpdTest extends TestCase
         $this->assertArrayNotHasKey('given_items_count', $res->json('data.0'));
         $this->assertArrayHasKey('ppe_sizes', $res->json('data.0'));
     }
+
+    public function test_store_and_update_work_without_emergency_contact_and_keep_old_value(): void
+    {
+        $this->actingAsAdmin();
+
+        $res = $this->postJson('/api/employes', [
+            'id_number' => 'EMP90003',
+            'name' => 'Budi Santoso',
+            'division' => 'Safety',
+            'position' => 'Technician',
+            'contract_start' => '2026-01-01',
+            'contract_end' => '2026-12-31',
+        ])->assertCreated();
+        $id = $res->json('data.id');
+        $this->assertDatabaseHas('employes', ['id' => $id, 'emergency_contact' => null]);
+
+        $e = $this->makeEmployee(['emergency_contact' => '08123456789']);
+        $this->putJson("/api/employes/{$e->id}", [
+            'id_number' => $e->id_number,
+            'name' => 'Budi Santoso',
+            'division' => 'Dryer',
+            'position' => 'Technician',
+            'status' => 'active',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('employes', ['id' => $e->id, 'emergency_contact' => '08123456789']);
+    }
+
+    public function test_cpd_without_home_address_succeeds(): void
+    {
+        $this->actingAsAdmin();
+        $e = $this->makeEmployee();
+
+        $this->putJson("/api/employes/{$e->id}/cpd", $this->cpd())->assertOk();
+        $this->assertDatabaseHas('employee_cpd', ['employes_id' => $e->id, 'home_address' => null]);
+    }
 }

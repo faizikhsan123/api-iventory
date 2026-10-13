@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\LogsActivity;
 use App\Http\Requests\ContractRenewalRequest;
+use App\Http\Requests\ResignRequest;
 use App\Models\ContractRenewal;
 use App\Models\Employes;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -93,6 +95,49 @@ class ContractController extends Controller
         ], 201);
     }
 
+    // resign: tanggal boleh di masa depan (terjadwal), status baru berubah saat tanggalnya tiba
+    public function resign(ResignRequest $request, Employes $employe)
+    {
+        if ($employe->status === 'inactive') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Karyawan sudah nonaktif',
+            ], 422);
+        }
+
+        $data = $request->validated();
+        $date = Carbon::parse($data['resign_date'])->startOfDay();
+        $effective = $date->lte(now()->startOfDay());
+
+        DB::transaction(function () use ($employe, $data, $date, $effective) {
+            $employe->update([
+                'status' => $effective ? 'inactive' : $employe->status,
+                'left_at' => $date->toDateString(),
+                'resign_reason' => $data['reason'],
+                'exit_type' => 'resigned',
+            ]);
+        });
+
+        $name = $employe->user->name ?? $employe->id;
+        $when = $date->format('Y-m-d');
+        $this->logActivity(
+            $effective ? 'Resign Karyawan' : 'Jadwalkan Resign Karyawan',
+            "Karyawan {$name} ".($effective ? 'resign' : 'dijadwalkan resign')." pada {$when}. Alasan: {$data['reason']}"
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $effective ? 'Resign Berhasil Dicatat' : 'Resign Berhasil Dijadwalkan',
+            'data' => [
+                'status' => $employe->status,
+                'left_at' => $when,
+                'resign_reason' => $employe->resign_reason,
+                'exit_type' => $employe->exit_type,
+                'scheduled' => ! $effective,
+            ],
+        ]);
+    }
+
     // hapus perpanjangan; kalau itu perpanjangan terakhir, contract_end dikembalikan
     public function destroyRenewal(ContractRenewal $contractRenewal)
     {
@@ -129,6 +174,9 @@ class ContractController extends Controller
             'status' => $e->status,
             'contract_start' => $e->contract_start?->format('Y-m-d'),
             'contract_end' => $e->contract_end?->format('Y-m-d'),
+            'left_at' => $e->left_at?->format('Y-m-d'),
+            'resign_reason' => $e->resign_reason,
+            'exit_type' => $e->exit_type,
             'renewals_count' => (int) $e->contract_renewals_count,
             'reviews_count' => (int) $e->performance_reviews_count,
             'average_score' => $this->round($e->average_score),

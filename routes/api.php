@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeeCpdController;
 use App\Http\Controllers\EmployesController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceDocumentController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\McuController;
 use App\Http\Controllers\PerformanceReviewController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\TrainingParticipantController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransactionItemController;
 use App\Http\Controllers\TurnoverController;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -39,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // rfq (log permintaan penawaran): semua user login boleh lihat, ubah khusus admin
     Route::get('/rfqs/options', [RfqController::class, 'options']);
+    Route::get('/rfqs/export', [RfqController::class, 'export']);
     Route::apiResource('rfqs', RfqController::class)->only(['index', 'show']);
 
     Route::middleware('role:admin')->group(function () {
@@ -50,9 +53,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // invoicing (tracking invoice jasa): semua user login boleh lihat, ubah khusus admin
     Route::apiResource('invoices', InvoiceController::class)->only(['index', 'show']);
 
+    Route::get('/invoices/{invoice}/documents/{type}', [InvoiceDocumentController::class, 'show'])
+        ->whereIn('type', Invoice::DOCUMENT_TYPES)
+        ->middleware('throttle:60,1');
+
     Route::middleware('role:admin')->group(function () {
         Route::apiResource('invoices', InvoiceController::class)->except(['index', 'show']);
         Route::post('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus']);
+        Route::post('/invoices/{invoice}/documents', [InvoiceDocumentController::class, 'store'])
+            ->middleware('throttle:20,1');
+        Route::delete('/invoices/{invoice}/documents/{type}', [InvoiceDocumentController::class, 'destroy'])
+            ->whereIn('type', Invoice::DOCUMENT_TYPES);
     });
 
     // mcu: semua user login boleh lihat, tambah/ubah/hapus khusus admin
@@ -68,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::post('/contracts/{employe}/renewals', [ContractController::class, 'storeRenewal']);
+        Route::post('/contracts/{employe}/resign', [ContractController::class, 'resign']);
         Route::delete('/contract-renewals/{contractRenewal}', [ContractController::class, 'destroyRenewal']);
         Route::post('/employes/{employe}/performance-reviews', [PerformanceReviewController::class, 'store']);
         Route::put('/employes/{employe}/cpd', [EmployeeCpdController::class, 'upsert']);

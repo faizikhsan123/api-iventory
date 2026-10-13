@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RfqExport;
 use App\Http\Controllers\Concerns\LogsActivity;
 use App\Http\Requests\RfqRequest;
 use App\Http\Requests\RfqUpdateRequest;
 use App\Http\Resources\RfqResource;
 use App\Models\Rfq;
 use App\Models\RfqUpdate;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RfqController extends Controller
 {
@@ -21,23 +24,8 @@ class RfqController extends Controller
     {
         $perPage = max(1, min($request->integer('per_page', 10), 100));
 
-        $rfqs = Rfq::query()
+        $rfqs = $this->filteredQuery($request)
             ->with('latestUpdate')
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
-            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->input('type')))
-            // prioritas: kode persis (A1) atau satu grup huruf (A = A1..A5)
-            ->when($request->filled('priority'), function ($q) use ($request) {
-                $p = strtoupper($request->input('priority'));
-                strlen($p) === 1 ? $q->where('priority_code', 'like', $p.'%') : $q->where('priority_code', $p);
-            })
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $s = $request->input('search');
-                $q->where(function ($w) use ($s) {
-                    foreach (['enquiry_no', 'opportunity_name', 'customer', 'area', 'type', 'quote_no', 'po_number', 'current_pic'] as $col) {
-                        $w->orWhere($col, 'like', "%{$s}%");
-                    }
-                });
-            })
             ->orderByDesc('rfq_date')
             ->orderByDesc('enquiry_no')
             ->paginate($perPage);
@@ -54,6 +42,36 @@ class RfqController extends Controller
             ],
             'summary' => $this->summary(),
         ]);
+    }
+
+    // export Excel log RFQ: filter sama dengan index, tanpa paginasi
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new RfqExport($this->filteredQuery($request)->with('latestUpdate')->orderByDesc('rfq_date')->orderByDesc('enquiry_no')),
+            'log-rfq-'.now()->format('Y-m-d_His').'.xlsx'
+        );
+    }
+
+    /** Filter bersama index & export (status, type, priority, search). */
+    private function filteredQuery(Request $request): Builder
+    {
+        return Rfq::query()
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
+            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->input('type')))
+            // prioritas: kode persis (A1) atau satu grup huruf (A = A1..A5)
+            ->when($request->filled('priority'), function ($q) use ($request) {
+                $p = strtoupper($request->input('priority'));
+                strlen($p) === 1 ? $q->where('priority_code', 'like', $p.'%') : $q->where('priority_code', $p);
+            })
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $s = $request->input('search');
+                $q->where(function ($w) use ($s) {
+                    foreach (['enquiry_no', 'opportunity_name', 'customer', 'area', 'type', 'quote_no', 'po_number', 'current_pic'] as $col) {
+                        $w->orWhere($col, 'like', "%{$s}%");
+                    }
+                });
+            });
     }
 
     // pilihan untuk form & filter (satu sumber: Rfq::PRIORITIES, bukan disalin di frontend)

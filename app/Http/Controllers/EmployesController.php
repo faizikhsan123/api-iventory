@@ -58,6 +58,10 @@ class EmployesController extends Controller
         if ($request->filled('position')) {
             $query->where('position', $request->input('position'));
         }
+        // filter status (active|inactive)
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
 
         $employes = $query->latest()->paginate($perPage);
 
@@ -260,7 +264,8 @@ class EmployesController extends Controller
                 'contract_end' => $validated['contract_end'] ?? null,
                 'ktp_address' => $validated['ktp_address'] ?? null,
                 'actual_address' => $validated['actual_address'] ?? null,
-                'emergency_contact' => $validated['emergency_contact'] ?? null,
+                // emergency_contact tidak lagi ada di form: jangan timpa data lama bila tidak dikirim
+                ...Arr::only($validated, ['emergency_contact']),
                 // ukuran APR hanya diubah bila dikirim
                 ...Arr::only($validated, self::PPE_FIELDS),
             ]);

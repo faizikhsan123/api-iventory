@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -146,7 +147,13 @@ class InvoiceController extends Controller
     public function destroy(Invoice $invoice)
     {
         $label = "{$invoice->service_name} ({$invoice->division})";
-        $invoice->delete();
+        $id = $invoice->id;
+
+        // folder dokumen dihapus hanya setelah delete DB sukses (commit)
+        DB::transaction(function () use ($invoice, $id) {
+            $invoice->delete();
+            DB::afterCommit(fn () => Storage::disk(Invoice::DOCUMENT_DISK)->deleteDirectory("invoices/{$id}"));
+        });
 
         $this->logActivity('Menghapus Invoice', "Invoice {$label} berhasil dihapus");
 

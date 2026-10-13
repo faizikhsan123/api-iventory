@@ -23,6 +23,8 @@ class Employes extends Model
         'contract_start',
         'contract_end',
         'left_at',
+        'resign_reason',
+        'exit_type',
         'ktp_address',
         'actual_address',
         'emergency_contact',

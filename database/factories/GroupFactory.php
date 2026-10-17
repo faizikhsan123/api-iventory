@@ -20,7 +20,7 @@ class GroupFactory extends Factory
     {
         return [
             'name_group' => $this->faker->word(),
-            
+
             'employes_id' => Employes::inRandomOrder()->value('id'),
         ];
     }

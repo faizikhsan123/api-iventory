@@ -17,7 +17,7 @@ return new class extends Migration
         }
 
         // Tambahkan kolom date jika belum ada
-        if (!Schema::hasColumn('training_participants', 'date')) {
+        if (! Schema::hasColumn('training_participants', 'date')) {
             Schema::table('training_participants', function (Blueprint $table) {
                 $table->date('date')->nullable()->after('employes_id');
             });
@@ -34,7 +34,7 @@ return new class extends Migration
         }
 
         // Kembalikan kolom date ke trainings jika belum ada
-        if (!Schema::hasColumn('trainings', 'date')) {
+        if (! Schema::hasColumn('trainings', 'date')) {
             Schema::table('trainings', function (Blueprint $table) {
                 $table->dateTime('date')->nullable();
             });

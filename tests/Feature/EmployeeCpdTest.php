@@ -18,7 +18,7 @@ class EmployeeCpdTest extends TestCase
         return [
             'date_of_birth' => '1990-05-17',
             'place_of_birth' => 'Jakarta',
-            'gender' => 'Male',
+            'gender' => 'Laki-laki',
             'nik_ktp' => '3171234567890001',
             'npwp' => '12.345.678.9-012.000',
             'phone' => '081234567890',
@@ -87,6 +87,75 @@ class EmployeeCpdTest extends TestCase
         $this->putJson("/api/employes/{$e->id}/cpd", ['date_of_birth' => 'bukan-tanggal', 'phone' => str_repeat('1', 40)])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['date_of_birth', 'phone']);
+    }
+
+    public function test_fixed_choice_fields_accept_valid_values(): void
+    {
+        $this->actingAsAdmin();
+        $e = $this->makeEmployee();
+
+        $this->putJson("/api/employes/{$e->id}/cpd", [
+            'gender' => 'Perempuan',
+            'religion' => 'Kristen Protestan',
+            'marital_status' => 'Cerai Hidup',
+            'emergency_relationship' => 'Saudara Kandung',
+        ])->assertOk()
+            ->assertJsonPath('data.gender', 'Perempuan')
+            ->assertJsonPath('data.religion', 'Kristen Protestan')
+            ->assertJsonPath('data.marital_status', 'Cerai Hidup')
+            ->assertJsonPath('data.emergency_relationship', 'Saudara Kandung');
+    }
+
+    public function test_fixed_choice_fields_reject_values_outside_list(): void
+    {
+        $this->actingAsAdmin();
+        $e = $this->makeEmployee();
+
+        $this->putJson("/api/employes/{$e->id}/cpd", [
+            'gender' => 'Male',
+            'religion' => 'Foo',
+            'marital_status' => 'Married',
+            'emergency_relationship' => 'Foo',
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['gender', 'religion', 'marital_status', 'emergency_relationship']);
+
+        // juga lewat blok cpd bersarang
+        $this->postJson('/api/employes', [
+            'id_number' => 'EMP90004',
+            'name' => 'Budi Santoso',
+            'division' => 'Safety',
+            'position' => 'Technician',
+            'contract_start' => '2026-01-01',
+            'contract_end' => '2026-12-31',
+            'cpd' => ['gender' => 'Male'],
+        ])->assertStatus(422)->assertJsonValidationErrors('cpd.gender');
+    }
+
+    public function test_fixed_choice_fields_accept_empty_and_null_and_unsent_keeps_old_value(): void
+    {
+        $this->actingAsAdmin();
+        $e = $this->makeEmployee();
+        // data lama bebas (legacy) di DB
+        $e->cpd()->create(['gender' => 'Male', 'religion' => 'Islam']);
+
+        // tidak dikirim -> tidak tertimpa
+        $this->putJson("/api/employes/{$e->id}/cpd", ['city' => 'Timika'])->assertOk();
+        $this->assertDatabaseHas('employee_cpd', ['employes_id' => $e->id, 'gender' => 'Male', 'religion' => 'Islam']);
+
+        // kosong / null diterima dan jadi null
+        $this->putJson("/api/employes/{$e->id}/cpd", [
+            'gender' => '',
+            'religion' => null,
+            'marital_status' => '',
+            'emergency_relationship' => null,
+        ])->assertOk();
+        $this->assertDatabaseHas('employee_cpd', [
+            'employes_id' => $e->id,
+            'gender' => null,
+            'religion' => null,
+            'marital_status' => null,
+            'emergency_relationship' => null,
+        ]);
     }
 
     public function test_store_employee_with_cpd_and_ppe(): void

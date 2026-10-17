@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('pic');
-            $table->enum('spesialis', ["apd", 'tools', 'others']);
+            $table->enum('spesialis', ['apd', 'tools', 'others']);
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->text('address')->nullable();
-            $table->enum('status',[
+            $table->enum('status', [
                 'active',
-                'inactive'
+                'inactive',
             ]);
             $table->timestamps();
         });

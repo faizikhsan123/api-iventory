@@ -17,22 +17,21 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('group_id')->nullable()->constrained()->nullOnDelete();
             $table->string('file')->nullable();
-                $table->enum('division', [
-                    'Gas Analyzer',
-                    'I&C-PMR',
-                    'I&C-ER',
-                ])->default('Gas Analyzer');
+            $table->enum('division', [
+                'Gas Analyzer',
+                'I&C-PMR',
+                'I&C-ER',
+            ])->default('Gas Analyzer');
             $table->enum('position', [
                 'Supervisor',
                 'Foreman',
                 'Technician',
-                'Safety'
+                'Safety',
             ])->default('Technician');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('ktp_address')->nullable();
             $table->string('actual_address')->nullable();
             $table->string('emergency_contact')->nullable();
-           
 
             $table->timestamps();
         });

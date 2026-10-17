@@ -9,6 +9,9 @@ class Item extends Model
 {
     use HasFactory;
 
+    /** Sumber tunggal nilai kategori barang (urutan = urutan enum DB). */
+    public const CATEGORIES = ['apd', 'tools', 'atk', 'others'];
+
     protected $fillable = [
         'file',
         'category',

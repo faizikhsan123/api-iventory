@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employes;
-use App\Models\group;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -26,15 +24,12 @@ class DatabaseSeeder extends Seeder
 
         $admin->assignRole('admin');
 
-        $admin = User::firstOrCreate(
-            ['email' => 'prita@gmail.com'],
-            ['name' => 'prita', 'password' => bcrypt('password')]
+        // office: read-only. updateOrCreate agar idempotent & password selalu sinkron.
+        $office = User::updateOrCreate(
+            ['email' => 'office@gmail.com'],
+            ['name' => 'office', 'password' => bcrypt('password')]
         );
 
-        $admin->assignRole('staff');
-
-     
-
-       
+        $office->syncRoles('office');
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Item;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreItemRequest extends FormRequest
 {
@@ -25,7 +27,7 @@ class StoreItemRequest extends FormRequest
         return [
             'file' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120',
             'name' => 'required|max:50',
-            'category' => 'required|in:apd,tools,others',
+            'category' => ['required', Rule::in(Item::CATEGORIES)],
             'brand' => 'nullable|max:50|string',
             'type' => 'nullable|max:50|string',
             'min_stock' => 'nullable|numeric',

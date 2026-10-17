@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Supplier;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SupplierSeeder extends Seeder
@@ -13,6 +12,6 @@ class SupplierSeeder extends Seeder
      */
     public function run(): void
     {
-          Supplier::factory(10)->create();
+        Supplier::factory(10)->create();
     }
 }

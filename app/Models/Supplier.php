@@ -11,6 +11,9 @@ class Supplier extends Model
     /** @use HasFactory<SupplierFactory> */
     use HasFactory;
 
+    /** Sumber tunggal nilai spesialis supplier (urutan = urutan enum DB). */
+    public const SPESIALIS = ['apd', 'tools', 'atk', 'others'];
+
     protected $fillable = [
         'name',
         'pic',

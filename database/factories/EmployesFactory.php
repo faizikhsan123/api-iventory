@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Employes;
-use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +21,6 @@ class EmployesFactory extends Factory
 
         return [
             'user_id' => User::inRandomOrder()->value('id'),
-          
 
             'division' => fake()->randomElement([
                 'Gas Analyzer',
@@ -36,7 +34,7 @@ class EmployesFactory extends Factory
                 'Foreman',
                 'Supervisor',
                 'Technician',
-               
+
             ]),
 
             'status' => fake()->randomElement([

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EmployeeCpd;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 // PUT /employes/{id}/cpd. Aturan juga dipakai bersarang (prefix "cpd.") oleh request karyawan.
 class EmployeeCpdRequest extends FormRequest
@@ -23,9 +25,9 @@ class EmployeeCpdRequest extends FormRequest
         $rules = [
             'date_of_birth' => ['nullable', 'date'],
             'place_of_birth' => ['nullable', 'string', 'max:100'],
-            'gender' => ['nullable', 'string', 'max:20'],
-            'marital_status' => ['nullable', 'string', 'max:30'],
-            'religion' => ['nullable', 'string', 'max:30'],
+            'gender' => ['nullable', Rule::in(EmployeeCpd::GENDERS)],
+            'marital_status' => ['nullable', Rule::in(EmployeeCpd::MARITAL_STATUSES)],
+            'religion' => ['nullable', Rule::in(EmployeeCpd::RELIGIONS)],
             'nik_ktp' => ['nullable', 'string', 'max:32'],
             'npwp' => ['nullable', 'string', 'max:32'],
             'bpjs_labour_no' => ['nullable', 'string', 'max:50'],
@@ -40,7 +42,7 @@ class EmployeeCpdRequest extends FormRequest
             'ptfi_assigned_uid' => ['nullable', 'string', 'max:50'],
             'emergency_name' => ['nullable', 'string', 'max:100'],
             'emergency_phone' => ['nullable', 'string', 'max:30'],
-            'emergency_relationship' => ['nullable', 'string', 'max:50'],
+            'emergency_relationship' => ['nullable', Rule::in(EmployeeCpd::EMERGENCY_RELATIONSHIPS)],
         ];
 
         $out = [];

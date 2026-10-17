@@ -19,7 +19,7 @@ class RolePermissionSeeder extends Seeder
 
         // buat role
         $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'staff']);
+        Role::firstOrCreate(['name' => 'office']); // read-only di semua modul
 
         // assign semua permission ke admin
         $roleAdmin->syncPermissions($permissions);

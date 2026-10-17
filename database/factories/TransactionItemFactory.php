@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TransactionItemFactory extends Factory
 {
-
-
     public function definition(): array
     {
         return [

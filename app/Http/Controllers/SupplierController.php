@@ -41,6 +41,11 @@ class SupplierController extends Controller
             );
         }
 
+        // filter spesialis
+        if ($request->filled('spesialis')) {
+            $query->where('spesialis', $request->input('spesialis'));
+        }
+
         $supplier = $query
             ->latest()
             ->paginate($perPage)

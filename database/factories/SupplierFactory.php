@@ -19,10 +19,12 @@ class SupplierFactory extends Factory
     {
         return [
             'name' => fake()->company(),
+            'pic' => fake()->name(),
+            'spesialis' => fake()->randomElement(Supplier::SPESIALIS),
             'phone' => fake()->phoneNumber(),
             'address' => fake()->address('20'),
             'email' => fake()->email(),
-            'status' => fake()->randomElement(['active', 'inactive'])
+            'status' => fake()->randomElement(['active', 'inactive']),
         ];
     }
 }

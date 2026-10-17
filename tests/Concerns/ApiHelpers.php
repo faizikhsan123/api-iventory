@@ -20,8 +20,13 @@ trait ApiHelpers
 
     protected function actingAsViewer(): User
     {
+        return $this->actingAsOffice();
+    }
+
+    protected function actingAsOffice(): User
+    {
         $user = User::factory()->create();
-        $user->assignRole(Role::findOrCreate('viewer', 'web'));
+        $user->assignRole(Role::findOrCreate('office', 'web'));
         Sanctum::actingAs($user);
 
         return $user;

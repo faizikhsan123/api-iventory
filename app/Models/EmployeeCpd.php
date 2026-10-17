@@ -7,6 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeCpd extends Model
 {
+    // Daftar pilihan tetap (sumber tunggal); kolom DB tetap string.
+    public const GENDERS = ['Laki-laki', 'Perempuan'];
+
+    public const RELIGIONS = ['Islam', 'Kristen Protestan', 'Katolik', 'Hindu', 'Buddha', 'Konghucu'];
+
+    public const MARITAL_STATUSES = ['Belum Menikah', 'Menikah', 'Cerai Hidup', 'Cerai Mati'];
+
+    public const EMERGENCY_RELATIONSHIPS = ['Suami', 'Istri', 'Ayah', 'Ibu', 'Anak', 'Saudara Kandung', 'Lainnya'];
+
     protected $table = 'employee_cpd';
 
     protected $fillable = [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Supplier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +26,7 @@ class UpdateSupplierRequest extends FormRequest
         return [
             'name' => 'required|string|min:4|max:50',
             'pic' => 'required|string|min:2|max:50',
-            'spesialis' => 'required|in:apd,tools,others',
+            'spesialis' => ['required', Rule::in(Supplier::SPESIALIS)],
             'phone' => 'nullable|string|min:8|max:15',
             'email' => [
                 'nullable',

@@ -35,10 +35,7 @@ class ItemFactory extends Factory
 
             'min_stock' => fake()->numberBetween(1, 20),
 
-            'category' => fake()->randomElement([
-                'apd',
-                'tools',
-            ]),
+            'category' => fake()->randomElement(Item::CATEGORIES),
 
             'brand' => fake()->randomElement([
                 'Krisbow',
@@ -49,15 +46,6 @@ class ItemFactory extends Factory
             ]),
 
             'type' => fake()->words(2, true),
-
-            'size' => fake()->randomElement([
-                's',
-                'm',
-                'l',
-                'xl',
-                'xxl',
-                'universal',
-            ]),
 
             'unit' => fake()->randomElement([
                 'pcs',

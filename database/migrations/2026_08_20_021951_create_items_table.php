@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->id();
-          
+
             $table->string('file')->nullable();
             $table->string('name');
-            $table->enum('category', ['apd','tools', 'others'])->default('apd');
+            $table->enum('category', ['apd', 'tools', 'others'])->default('apd');
             $table->string('brand')->nullable();
             $table->string('type')->nullable();
-              $table->string('part_number')->nullable();
+            $table->string('part_number')->nullable();
             // $table->string('size')->nullable();
             // $table->string('size', [
             //     's',
@@ -37,10 +37,10 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-    
+
     /**
      * Reverse the migrations.
-     */ 
+     */
     public function down(): void
     {
         Schema::dropIfExists('items');

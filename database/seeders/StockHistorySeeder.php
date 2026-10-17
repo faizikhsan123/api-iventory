@@ -12,6 +12,6 @@ class StockHistorySeeder extends Seeder
      */
     public function run(): void
     {
-     StockHistory::factory(10)->create();
+        StockHistory::factory(10)->create();
     }
 }

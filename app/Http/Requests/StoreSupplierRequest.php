@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Supplier;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSupplierRequest extends FormRequest
 {
@@ -25,7 +27,7 @@ class StoreSupplierRequest extends FormRequest
         return [
             'name' => 'required|string|min:4|max:50',
             'pic' => 'required|string|min:2|max:50',
-            'spesialis' => 'required|in:apd,tools,others',
+            'spesialis' => ['required', Rule::in(Supplier::SPESIALIS)],
             'phone' => 'nullable|string|min:8|max:15',
             'email' => 'nullable|email:rfc,dns|unique:suppliers,email',
             'address' => 'nullable|string|min:3|max:200',

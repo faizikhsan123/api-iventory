@@ -95,6 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
     Route::get('/dashboard/turnover', [TurnoverController::class, 'index']);
     Route::get('trainings/{training}/participants', [TrainingParticipantController::class, 'index']);
+    //hbjhbjhbjhbjhbjbhjbjbjb
     Route::get('participants/{participant}/file', [TrainingParticipantController::class, 'showFile']);
 
     Route::apiResource('suppliers', SupplierController::class)->only(['index', 'show']);

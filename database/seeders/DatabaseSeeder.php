@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -12,24 +13,37 @@ class DatabaseSeeder extends Seeder
         // urutan penting: role harus ada dulu sebelum di-assign
         $this->call([
             RolePermissionSeeder::class,
-            // UserSeeder::class,
-            // EmployesSeeder::class,
-            // groupSeeder::class,
         ]);
 
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@gmail.com'],
-            ['name' => 'admin', 'password' => bcrypt('password')]
-        );
+        // Admin dari env (ADMIN_EMAIL / ADMIN_PASSWORD). Tanpa env = tidak dibuat.
+        $email = env('ADMIN_EMAIL');
+        $password = env('ADMIN_PASSWORD');
 
-        $admin->assignRole('admin');
+        if ($email && $password) {
+            $admin = User::updateOrCreate(
+                ['email' => $email],
+                ['name' => 'admin', 'password' => bcrypt($password)]
+            );
+            $admin->syncRoles('admin');
+        } elseif (app()->isProduction()) {
+            $this->command?->warn('ADMIN_EMAIL/ADMIN_PASSWORD kosong: tidak ada akun admin dibuat.');
+        }
 
-        // office: read-only. updateOrCreate agar idempotent & password selalu sinkron.
-        $office = User::updateOrCreate(
-            ['email' => 'office@gmail.com'],
-            ['name' => 'office', 'password' => bcrypt('password')]
-        );
+        // Akun default hanya untuk lokal/testing, TIDAK di production.
+        if (! app()->isProduction()) {
+            $localAdmin = User::firstOrCreate(
+                ['email' => 'admin@gmail.com'],
+                ['name' => 'admin', 'password' => bcrypt('password')]
+            );
+            $localAdmin->assignRole('admin');
 
-        $office->syncRoles('office');
+            $office = User::updateOrCreate(
+                ['email' => 'office@gmail.com'],
+                ['name' => 'office', 'password' => bcrypt('password')]
+            );
+            $office->syncRoles('office');
+
+            
+        }
     }
 }

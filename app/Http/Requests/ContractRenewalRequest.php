@@ -13,11 +13,12 @@ class ContractRenewalRequest extends FormRequest
 
     public function rules(): array
     {
-        // tanggal berakhir baru harus setelah tanggal berakhir kontrak saat ini
-        $currentEnd = $this->route('employe')?->contract_end?->format('Y-m-d');
+        // tanggal lampau boleh (rekap riwayat); hanya tidak boleh sebelum kontrak mulai
+        $start = $this->route('employe')?->contract_start?->format('Y-m-d');
 
         return [
-            'new_end' => ['required', 'date', $currentEnd ? "after:{$currentEnd}" : 'after:1970-01-01'],
+            'new_end' => ['required', 'date', ...($start ? ["after_or_equal:{$start}"] : [])],
+            'previous_end' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
         ];
     }
@@ -25,7 +26,7 @@ class ContractRenewalRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'new_end.after' => 'Tanggal berakhir baru harus setelah tanggal berakhir kontrak saat ini',
+            'new_end.after_or_equal' => 'Tanggal berakhir baru tidak boleh sebelum tanggal mulai kontrak',
         ];
     }
 }

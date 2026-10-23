@@ -71,19 +71,26 @@ class ContractController extends Controller
         ]);
     }
 
-    // perpanjang kontrak: simpan riwayat + geser contract_end ke tanggal baru
+    // perpanjang kontrak: simpan riwayat; contract_end hanya digeser bila new_end lebih besar
+    // (riwayat lama 2024/2025 dicatat saja agar kontrak aktif tidak mundur)
     public function storeRenewal(ContractRenewalRequest $request, Employes $employe)
     {
         $data = $request->validated();
 
         DB::transaction(function () use ($employe, $data) {
+            $current = $employe->contract_end?->format('Y-m-d');
+            $advances = $current === null || $data['new_end'] > $current;
+            $previous = $data['previous_end'] ?? ($advances || $data['new_end'] === $current ? $current : null);
+
             $employe->contractRenewals()->create([
-                'previous_end' => $employe->contract_end,
+                'previous_end' => $previous,
                 'new_end' => $data['new_end'],
                 'note' => $data['note'] ?? null,
             ]);
 
-            $employe->update(['contract_end' => $data['new_end']]);
+            if ($advances) {
+                $employe->update(['contract_end' => $data['new_end']]);
+            }
         });
 
         $name = $employe->user->name ?? $employe->id;
@@ -144,10 +151,14 @@ class ContractController extends Controller
         DB::transaction(function () use ($contractRenewal) {
             $employe = $contractRenewal->employes;
             $isLatest = ! $employe->contractRenewals()->where('id', '>', $contractRenewal->id)->exists();
+            // hanya perpanjangan yang benar-benar menggeser contract_end yang dikembalikan;
+            // catatan riwayat (new_end <= akhir kontrak saat itu) tidak menyentuh contract_end
+            $shifted = $employe->contract_end?->format('Y-m-d') === $contractRenewal->new_end->format('Y-m-d')
+                && ($contractRenewal->previous_end === null || $contractRenewal->previous_end->lt($contractRenewal->new_end));
 
             $contractRenewal->delete();
 
-            if ($isLatest) {
+            if ($isLatest && $shifted) {
                 $employe->update(['contract_end' => $contractRenewal->previous_end]);
             }
         });

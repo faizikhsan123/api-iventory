@@ -26,7 +26,7 @@ class InvoiceTest extends TestCase
 
     public function test_constants_match_agreed_values(): void
     {
-        $this->assertSame(['drafting_timesheet', 'waiting_approved_timesheet', 'waiting_quote_or_invoicing', 'waiting_service_receipt', 'waiting_work_order', 'paid'], Invoice::STATUSES);
+        $this->assertSame(['drafting_timesheet', 'waiting_approved_timesheet', 'waiting_quote_or_invoicing', 'waiting_service_receipt', 'waiting_work_order', 'waiting_payment', 'paid'], Invoice::STATUSES);
         $this->assertSame(['Gas Analyzer', 'I&C-PMR', 'I&C-ER', 'Dryer'], Invoice::DIVISIONS);
     }
 
@@ -83,13 +83,23 @@ class InvoiceTest extends TestCase
 
         $this->postJson("/api/invoices/{$id}/status", ['status' => 'waiting_work_order', 'status_date' => '2026-10-09'])->assertOk();
 
+        $this->postJson("/api/invoices/{$id}/status", ['status' => 'waiting_payment', 'status_date' => '2026-10-10'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'waiting_payment');
+        $this->assertDatabaseHas('invoice_status_logs', ['invoice_id' => $id, 'status' => 'waiting_payment']);
+
+        $this->postJson("/api/invoices/{$id}/status", ['status' => 'paid', 'status_date' => '2026-10-11'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'paid');
+        $this->assertDatabaseHas('invoice_status_logs', ['invoice_id' => $id, 'status' => 'paid']);
+
         $this->postJson("/api/invoices/{$id}/status", ['status' => 'bogus', 'status_date' => '2026-10-09'])->assertStatus(422);
     }
 
     public function test_sort_status_orders_by_stage_and_ignores_invalid_value(): void
     {
         $this->actingAsViewer();
-        foreach (['paid', 'drafting_timesheet', 'waiting_work_order', 'waiting_approved_timesheet', 'waiting_quote_or_invoicing', 'waiting_service_receipt'] as $s) {
+        foreach (['paid', 'drafting_timesheet', 'waiting_payment', 'waiting_work_order', 'waiting_approved_timesheet', 'waiting_quote_or_invoicing', 'waiting_service_receipt'] as $s) {
             Invoice::create($this->payload(['status' => $s]));
         }
 
@@ -100,7 +110,7 @@ class InvoiceTest extends TestCase
         $this->assertSame(array_reverse(Invoice::STATUSES), $desc);
 
         // nilai tidak valid diabaikan: urut id terbaru (paid dibuat pertama jadi terakhir)
-        $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.5.status', 'paid');
+        $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.6.status', 'paid');
     }
 
     public function test_search_by_service_name_and_summary_follow_constants(): void

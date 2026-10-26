@@ -18,7 +18,7 @@ class InvoiceDocumentRequest extends FormRequest
     {
         return [
             'type' => ['required', 'string', Rule::in(Invoice::DOCUMENT_TYPES)],
-            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx', 'max:5120'],
+            'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx', 'max:10240'],
         ];
     }
 }

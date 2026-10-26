@@ -14,6 +14,7 @@ class Invoice extends Model
         'waiting_quote_or_invoicing',
         'waiting_service_receipt',
         'waiting_work_order',
+        'waiting_payment',
         'paid',
     ];
 

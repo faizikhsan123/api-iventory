@@ -75,9 +75,19 @@ class InvoiceDocumentsTest extends TestCase
         $this->upload($inv, 'hack')->assertStatus(422)->assertJsonValidationErrors('type');
         $this->upload($inv, '../../etc')->assertStatus(422)->assertJsonValidationErrors('type');
         $this->upload($inv, 'quote', UploadedFile::fake()->create('x.exe', 10))->assertStatus(422)->assertJsonValidationErrors('file');
-        $this->upload($inv, 'quote', UploadedFile::fake()->create('big.pdf', 6000, 'application/pdf'))->assertStatus(422)->assertJsonValidationErrors('file');
+        $this->upload($inv, 'quote', UploadedFile::fake()->create('big.pdf', 10241, 'application/pdf'))->assertStatus(422)->assertJsonValidationErrors('file');
         $this->postJson("/api/invoices/{$inv->id}/documents", ['type' => 'quote'])->assertStatus(422)->assertJsonValidationErrors('file');
         $this->assertNull($inv->fresh()->quote_document);
+    }
+
+    public function test_file_of_exactly_10mb_is_accepted(): void
+    {
+        Storage::fake('local');
+        $this->actingAsAdmin();
+        $inv = $this->makeInvoice();
+
+        $this->upload($inv, 'quote', UploadedFile::fake()->create('ten.pdf', 10240, 'application/pdf'))->assertCreated();
+        $this->assertNotNull($inv->fresh()->quote_document);
     }
 
     public function test_non_admin_cannot_upload_or_delete_but_can_download(): void

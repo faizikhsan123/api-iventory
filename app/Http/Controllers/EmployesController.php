@@ -63,7 +63,7 @@ class EmployesController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $employes = $query->latest()->paginate($perPage);
+        $employes = $query->latest()->orderByDesc('id')->paginate($perPage);
 
         return response()->json([
             'status' => 'success',

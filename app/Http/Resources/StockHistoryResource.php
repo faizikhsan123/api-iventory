@@ -16,6 +16,7 @@ class StockHistoryResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'qty' => $this->qty,
             'type' => $this->type,
             'note' => $this->note,

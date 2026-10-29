@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\PenerimaanStokExport;
+use App\Http\Controllers\Concerns\LogsActivity;
 use App\Http\Requests\StoreStockInRequest;
 use App\Http\Requests\StoreTransaction_itemRequest;
+use App\Http\Requests\UpdateQuantityRequest;
 use App\Http\Requests\UpdateStockHistoryRequest;
 use App\Http\Resources\ItemTransactionResource;
 use App\Http\Resources\StockHistoryResource;
@@ -12,6 +14,7 @@ use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
+use App\Services\StockQuantityAdjuster;
 use App\Services\StockValuation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +23,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class StockHistoryController extends Controller
 {
+    use LogsActivity;
+
     public function exportIn(Request $request)
     {
         return Excel::download(
@@ -238,5 +243,39 @@ class StockHistoryController extends Controller
     public function destroy(StockHistory $stockHistory)
     {
         //
+    }
+
+    /**
+     * Koreksi qty barang masuk (hanya qty, khusus admin).
+     */
+    public function updateQuantity(UpdateQuantityRequest $request, int $stockHistoryId, StockQuantityAdjuster $adjuster)
+    {
+        $newQty = (int) $request->validated()['quantity'];
+        $result = $adjuster->adjustStockIn($stockHistoryId, $newQty);
+
+        if ($result === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Qty tidak bisa diturunkan: stok akan menjadi negatif (sebagian sudah keluar)',
+            ], 422);
+        }
+
+        if ($result['changed']) {
+            $this->logActivity('Mengubah Qty Barang Masuk', "Qty barang masuk {$result['item']->name} diubah dari {$result['old_qty']} menjadi {$result['new_qty']} {$result['item']->unit}");
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['changed'] ? 'Qty berhasil diubah' : 'Qty tidak berubah',
+            'data' => [
+                'id' => $stockHistoryId,
+                'item_id' => $result['item']->id,
+                'item_name' => $result['item']->name,
+                'old_qty' => $result['old_qty'],
+                'new_qty' => $result['new_qty'],
+                'delta' => $result['delta'],
+                'current_stock' => (int) $result['item']->current_stock,
+            ],
+        ]);
     }
 }

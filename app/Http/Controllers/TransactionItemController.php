@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LogsActivity;
 use App\Http\Requests\StoreTransaction_itemRequest;
+use App\Http\Requests\UpdateQuantityRequest;
 use App\Http\Requests\UpdateTransaction_itemRequest;
 use App\Http\Resources\ItemTransactionResource;
 use App\Models\Activity;
 use App\Models\Item;
 use App\Models\StockHistory;
 use App\Models\TransactionItem;
+use App\Services\StockQuantityAdjuster;
 use App\Services\StockValuation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 
 class TransactionItemController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Display a listing of the resource.
      */
@@ -164,6 +169,40 @@ class TransactionItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Data TransactionItem Berhasil Dihapus',
+        ]);
+    }
+
+    /**
+     * Koreksi qty barang keluar (hanya qty, khusus admin).
+     */
+    public function updateQuantity(UpdateQuantityRequest $request, int $transactionItemId, StockQuantityAdjuster $adjuster)
+    {
+        $newQty = (int) $request->validated()['quantity'];
+        $result = $adjuster->adjustStockOut($transactionItemId, $newQty);
+
+        if ($result === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Stok tidak mencukupi untuk menaikkan qty barang keluar',
+            ], 422);
+        }
+
+        if ($result['changed']) {
+            $this->logActivity('Mengubah Qty Barang Keluar', "Qty barang keluar {$result['item']->name} diubah dari {$result['old_qty']} menjadi {$result['new_qty']} {$result['item']->unit}");
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['changed'] ? 'Qty berhasil diubah' : 'Qty tidak berubah',
+            'data' => [
+                'id' => $transactionItemId,
+                'item_id' => $result['item']->id,
+                'item_name' => $result['item']->name,
+                'old_qty' => $result['old_qty'],
+                'new_qty' => $result['new_qty'],
+                'delta' => $result['delta'],
+                'current_stock' => (int) $result['item']->current_stock,
+            ],
         ]);
     }
 }

@@ -125,4 +125,20 @@ class InvoiceTest extends TestCase
         $this->assertSame(Invoice::DIVISIONS, array_keys($res->json('summary.by_division')));
         $this->assertSame(2, $res->json('summary.by_division.Dryer'));
     }
+
+    public function test_service_description_is_optional_and_update_without_it_keeps_old_value(): void
+    {
+        $this->actingAsAdmin();
+        $data = $this->payload();
+        unset($data['service_description']);
+
+        $this->postJson('/api/invoices', $data)->assertCreated()->assertJsonPath('data.service_description', null);
+
+        $id = $this->postJson('/api/invoices', $this->payload(['service_description' => 'Lama']))->json('data.id');
+        $update = $this->payload();
+        unset($update['service_description']);
+
+        $this->putJson("/api/invoices/{$id}", $update)->assertOk()->assertJsonPath('data.service_description', 'Lama');
+        $this->assertDatabaseHas('invoices', ['id' => $id, 'service_description' => 'Lama']);
+    }
 }

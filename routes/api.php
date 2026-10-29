@@ -122,6 +122,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/stock-out', [StockOutController::class, 'store']);
         Route::post('/stock-history/in', [StockHistoryController::class, 'storeIn']);
 
+        // koreksi qty saja (barang keluar = transaction_item, barang masuk = stock_history type in)
+        Route::patch('/transaction-items/{transactionItemId}/quantity', [TransactionItemController::class, 'updateQuantity'])->whereNumber('transactionItemId');
+        Route::patch('/stock-history/{stockHistoryId}/quantity', [StockHistoryController::class, 'updateQuantity'])->whereNumber('stockHistoryId');
+
         // peserta training (upload file)
         Route::post('trainings/{training}/participants', [TrainingParticipantController::class, 'store']);
         Route::post('participants/{participant}', [TrainingParticipantController::class, 'update']);

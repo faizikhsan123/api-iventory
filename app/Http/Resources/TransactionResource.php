@@ -27,6 +27,7 @@ class TransactionResource extends JsonResource
         $itemNames = [];
         $totalQty = 0;
         $totalStock = 0;
+        $lines = [];
 
         foreach ($this->transaction_items as $transactionItem) {
             if ($transactionItem->item) {
@@ -35,6 +36,13 @@ class TransactionResource extends JsonResource
             }
 
             $totalQty += $transactionItem->qty;
+            $lines[] = [
+                'id' => $transactionItem->id, // id transaction_item: dipakai PATCH /transaction-items/{id}/quantity
+                'item_id' => $transactionItem->items_id,
+                'item_name' => $transactionItem->item?->name,
+                'unit' => $transactionItem->item?->unit,
+                'qty' => $transactionItem->qty,
+            ];
         }
 
         return [
@@ -48,6 +56,7 @@ class TransactionResource extends JsonResource
             'barang' => implode(', ', $itemNames),
             'total_qty' => $totalQty,
             'total_stock' => $totalStock,
+            'items' => $lines,
         ];
     }
 }

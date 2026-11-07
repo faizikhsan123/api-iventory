@@ -40,8 +40,8 @@ class InvoiceController extends Controller
                 $placeholders = implode(',', array_fill(0, count(Invoice::STATUSES), '?'));
                 $q->orderByRaw("FIELD(status, {$placeholders}) {$sortStatus}", Invoice::STATUSES);
             })
-            ->orderByRaw('invoice_date IS NULL') // tanpa tanggal selalu di akhir
-            ->orderBy('invoice_date', $sort)
+            ->orderByRaw('service_date IS NULL') // tanpa tanggal layanan selalu di akhir
+            ->orderBy('service_date', $sort)
             ->orderBy('id', $sort)
             ->paginate($perPage);
 

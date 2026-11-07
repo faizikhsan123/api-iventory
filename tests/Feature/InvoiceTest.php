@@ -113,16 +113,16 @@ class InvoiceTest extends TestCase
         $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.0.status', 'paid');
     }
 
-    public function test_sort_by_invoice_date_defaults_asc_supports_desc_and_spans_pages(): void
+    public function test_sort_by_service_date_defaults_asc_supports_desc_and_spans_pages(): void
     {
         $this->actingAsViewer();
         // dibuat acak; dua tanggal sama untuk uji tie-breaker id
         foreach (['2026-03-10', '2026-01-05', '2026-12-01', '2026-01-05', '2026-06-15'] as $d) {
-            Invoice::create($this->payload(['invoice_date' => $d]));
+            Invoice::create($this->payload(['service_date' => $d]));
         }
-        $nullId = Invoice::create($this->payload(['invoice_date' => null]))->id;
+        $nullId = Invoice::create($this->payload(['service_date' => null]))->id;
 
-        $dates = fn ($r) => collect($r->json('data'))->pluck('invoice_date')->all();
+        $dates = fn ($r) => collect($r->json('data'))->pluck('service_date')->all();
         $asc = ['2026-01-05', '2026-01-05', '2026-03-10', '2026-06-15', '2026-12-01'];
 
         // default, tanpa param
@@ -148,13 +148,13 @@ class InvoiceTest extends TestCase
         $this->assertSame([...$asc, null], [...$p1, ...$p2, ...$p3]);
     }
 
-    public function test_sort_status_is_primary_then_invoice_date_by_sort_param(): void
+    public function test_sort_status_is_primary_then_service_date_by_sort_param(): void
     {
         $this->actingAsViewer();
         foreach ([['paid', '2026-02-01'], ['drafting_timesheet', '2026-05-01'], ['paid', '2026-01-01'], ['drafting_timesheet', '2026-03-01'], ['paid', null]] as [$st, $d]) {
-            Invoice::create($this->payload(['status' => $st, 'invoice_date' => $d]));
+            Invoice::create($this->payload(['status' => $st, 'service_date' => $d]));
         }
-        $pairs = fn ($r) => collect($r->json('data'))->map(fn ($i) => $i['status'].'|'.$i['invoice_date'])->all();
+        $pairs = fn ($r) => collect($r->json('data'))->map(fn ($i) => $i['status'].'|'.$i['service_date'])->all();
 
         $this->assertSame(
             ['drafting_timesheet|2026-03-01', 'drafting_timesheet|2026-05-01', 'paid|2026-01-01', 'paid|2026-02-01', 'paid|'],

@@ -22,6 +22,9 @@ class InvoiceController extends Controller
         // urut berdasarkan tahapan (whitelist asc|desc); selain itu abaikan
         $sortStatus = in_array($request->input('sort_status'), ['asc', 'desc'], true) ? $request->input('sort_status') : null;
 
+        // urut berdasarkan tanggal invoice (whitelist asc|desc); default & nilai tidak valid: asc
+        $sort = $request->input('sort') === 'desc' ? 'desc' : 'asc';
+
         $invoices = Invoice::query()
             ->when($request->filled('division'), fn ($q) => $q->where('division', $request->input('division')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
@@ -37,7 +40,9 @@ class InvoiceController extends Controller
                 $placeholders = implode(',', array_fill(0, count(Invoice::STATUSES), '?'));
                 $q->orderByRaw("FIELD(status, {$placeholders}) {$sortStatus}", Invoice::STATUSES);
             })
-            ->latest('id')
+            ->orderByRaw('invoice_date IS NULL') // tanpa tanggal selalu di akhir
+            ->orderBy('invoice_date', $sort)
+            ->orderBy('id', $sort)
             ->paginate($perPage);
 
         // ringkasan per status (ikut filter divisi) dan per divisi — masing-masing satu query

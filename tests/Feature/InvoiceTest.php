@@ -109,8 +109,66 @@ class InvoiceTest extends TestCase
         $desc = collect($this->getJson('/api/invoices?sort_status=desc')->json('data'))->pluck('status')->all();
         $this->assertSame(array_reverse(Invoice::STATUSES), $desc);
 
-        // nilai tidak valid diabaikan: urut id terbaru (paid dibuat pertama jadi terakhir)
-        $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.6.status', 'paid');
+        // nilai tidak valid diabaikan: urut default (tanggal sama -> id asc, paid dibuat pertama)
+        $this->getJson('/api/invoices?sort_status=DROP')->assertOk()->assertJsonPath('data.0.status', 'paid');
+    }
+
+    public function test_sort_by_invoice_date_defaults_asc_supports_desc_and_spans_pages(): void
+    {
+        $this->actingAsViewer();
+        // dibuat acak; dua tanggal sama untuk uji tie-breaker id
+        foreach (['2026-03-10', '2026-01-05', '2026-12-01', '2026-01-05', '2026-06-15'] as $d) {
+            Invoice::create($this->payload(['invoice_date' => $d]));
+        }
+        $nullId = Invoice::create($this->payload(['invoice_date' => null]))->id;
+
+        $dates = fn ($r) => collect($r->json('data'))->pluck('invoice_date')->all();
+        $asc = ['2026-01-05', '2026-01-05', '2026-03-10', '2026-06-15', '2026-12-01'];
+
+        // default, tanpa param
+        $res = $this->getJson('/api/invoices')->assertOk();
+        $this->assertSame([...$asc, null], $dates($res));
+        $ids = collect($res->json('data'))->pluck('id')->all();
+        $this->assertLessThan($ids[1], $ids[0]); // tie-breaker id asc
+        $this->assertSame($nullId, end($ids));
+
+        // nilai tidak valid -> asc
+        $this->assertSame([...$asc, null], $dates($this->getJson('/api/invoices?sort=DROP')->assertOk()));
+
+        // desc (tanpa tanggal tetap terakhir)
+        $res = $this->getJson('/api/invoices?sort=desc')->assertOk();
+        $this->assertSame([...array_reverse($asc), null], $dates($res));
+        $ids = collect($res->json('data'))->pluck('id')->all();
+        $this->assertGreaterThan($ids[4], $ids[3]); // tie-breaker id desc
+
+        // lintas halaman
+        $p1 = $dates($this->getJson('/api/invoices?per_page=2&page=1')->assertOk());
+        $p2 = $dates($this->getJson('/api/invoices?per_page=2&page=2'));
+        $p3 = $dates($this->getJson('/api/invoices?per_page=2&page=3'));
+        $this->assertSame([...$asc, null], [...$p1, ...$p2, ...$p3]);
+    }
+
+    public function test_sort_status_is_primary_then_invoice_date_by_sort_param(): void
+    {
+        $this->actingAsViewer();
+        foreach ([['paid', '2026-02-01'], ['drafting_timesheet', '2026-05-01'], ['paid', '2026-01-01'], ['drafting_timesheet', '2026-03-01'], ['paid', null]] as [$st, $d]) {
+            Invoice::create($this->payload(['status' => $st, 'invoice_date' => $d]));
+        }
+        $pairs = fn ($r) => collect($r->json('data'))->map(fn ($i) => $i['status'].'|'.$i['invoice_date'])->all();
+
+        $this->assertSame(
+            ['drafting_timesheet|2026-03-01', 'drafting_timesheet|2026-05-01', 'paid|2026-01-01', 'paid|2026-02-01', 'paid|'],
+            $pairs($this->getJson('/api/invoices?sort_status=asc&sort=asc')->assertOk())
+        );
+        $this->assertSame(
+            ['paid|2026-02-01', 'paid|2026-01-01', 'paid|', 'drafting_timesheet|2026-05-01', 'drafting_timesheet|2026-03-01'],
+            $pairs($this->getJson('/api/invoices?sort_status=desc&sort=desc')->assertOk())
+        );
+        // sort_status desc dengan sort default (asc)
+        $this->assertSame(
+            ['paid|2026-01-01', 'paid|2026-02-01', 'paid|', 'drafting_timesheet|2026-03-01', 'drafting_timesheet|2026-05-01'],
+            $pairs($this->getJson('/api/invoices?sort_status=desc')->assertOk())
+        );
     }
 
     public function test_search_by_service_name_and_summary_follow_constants(): void

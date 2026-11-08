@@ -22,10 +22,11 @@ class InvoiceController extends Controller
         // urut berdasarkan tahapan (whitelist asc|desc); selain itu abaikan
         $sortStatus = in_array($request->input('sort_status'), ['asc', 'desc'], true) ? $request->input('sort_status') : null;
 
-        // urut berdasarkan tanggal invoice (whitelist asc|desc); default & nilai tidak valid: asc
+        // Urut periode pekerjaan di dalam setiap kontrak; tanggal layanan untuk data lama.
         $sort = $request->input('sort') === 'desc' ? 'desc' : 'asc';
 
         $invoices = Invoice::query()
+            ->when($request->filled('contract_number'), fn ($q) => $q->where('contract_number', $request->input('contract_number')))
             ->when($request->filled('division'), fn ($q) => $q->where('division', $request->input('division')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))
             ->when($request->filled('search'), function ($q) use ($request) {
@@ -33,20 +34,26 @@ class InvoiceController extends Controller
                 $q->where(function ($w) use ($search) {
                     $w->where('invoice_number', 'like', "%{$search}%")
                         ->orWhere('service_name', 'like', "%{$search}%")
-                        ->orWhere('client', 'like', "%{$search}%");
+                        ->orWhere('client', 'like', "%{$search}%")
+                        ->orWhere('contract_number', 'like', "%{$search}%");
                 });
             })
+            ->orderByRaw('contract_number IS NULL')
+            ->orderBy('contract_number')
             ->when($sortStatus, function ($q) use ($sortStatus) {
                 $placeholders = implode(',', array_fill(0, count(Invoice::STATUSES), '?'));
                 $q->orderByRaw("FIELD(status, {$placeholders}) {$sortStatus}", Invoice::STATUSES);
             })
-            ->orderByRaw('service_date IS NULL') // tanpa tanggal layanan selalu di akhir
-            ->orderBy('service_date', $sort)
+            ->orderByRaw('COALESCE(work_period_start, service_date) IS NULL')
+            ->orderByRaw("COALESCE(work_period_start, service_date) {$sort}")
+            ->orderByRaw('week_number IS NULL')
+            ->orderBy('week_number', $sort)
             ->orderBy('id', $sort)
             ->paginate($perPage);
 
         // ringkasan per status (ikut filter divisi) dan per divisi — masing-masing satu query
         $statusCounts = Invoice::query()
+            ->when($request->filled('contract_number'), fn ($q) => $q->where('contract_number', $request->input('contract_number')))
             ->when($request->filled('division'), fn ($q) => $q->where('division', $request->input('division')))
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
@@ -80,6 +87,14 @@ class InvoiceController extends Controller
             'status' => 'success',
             'message' => 'Data Invoice Ditemukan',
             'data' => $this->withLogs($invoice),
+        ]);
+    }
+
+    public function contracts()
+    {
+        return response()->json([
+            'data' => Invoice::query()->whereNotNull('contract_number')
+                ->distinct()->orderBy('contract_number')->pluck('contract_number'),
         ]);
     }
 

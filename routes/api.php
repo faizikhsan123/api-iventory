@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/employes/{employe}/performance-reviews', [PerformanceReviewController::class, 'index']);
 
     // invoicing (tracking invoice jasa): semua user login boleh lihat, ubah khusus admin
+    Route::get('/invoices/contracts', [InvoiceController::class, 'contracts']);
     Route::apiResource('invoices', InvoiceController::class)->only(['index', 'show']);
 
     Route::get('/invoices/{invoice}/documents/{type}', [InvoiceDocumentController::class, 'show'])

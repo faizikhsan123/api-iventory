@@ -25,10 +25,7 @@ class Invoice extends Model
         'invoice_number',
         'service_name',
         'service_date',
-        'contract_number',
-        'work_period_start',
-        'work_period_end',
-        'week_number',
+        'sort_order',
         'service_description',
         'division',
         'client',
@@ -61,9 +58,7 @@ class Invoice extends Model
     protected $casts = [
         'invoice_date' => 'date:Y-m-d',
         'service_date' => 'date:Y-m-d',
-        'work_period_start' => 'date:Y-m-d',
-        'work_period_end' => 'date:Y-m-d',
-        'week_number' => 'integer',
+        'sort_order' => 'integer',
         'amount' => 'float',
     ];
 

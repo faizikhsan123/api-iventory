@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class InvoicePeriodMigrationTest extends TestCase
+class InvoiceOrderMigrationTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -24,9 +24,9 @@ class InvoicePeriodMigrationTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_adding_period_columns_preserves_existing_invoices_documents_and_logs(): void
+    public function test_adding_order_preserves_existing_invoices_documents_periods_and_logs(): void
     {
-        $migration = require database_path('migrations/2026_11_08_000001_add_work_period_to_invoices.php');
+        $migration = require database_path('migrations/2026_11_08_000002_add_sort_order_to_invoices.php');
         $migration->down();
         $invoice = Invoice::create([
             'service_name' => 'Existing W22', 'division' => 'Dryer', 'amount' => 150000,
@@ -34,6 +34,10 @@ class InvoicePeriodMigrationTest extends TestCase
             'quote_document' => 'invoices/1/quote.pdf', 'quote_document_name' => 'Old quote.pdf',
         ]);
         $invoice->logs()->create(['status' => 'drafting_timesheet', 'status_date' => '2026-08-14', 'note' => 'Existing log']);
+        DB::table('invoices')->where('id', $invoice->id)->update([
+            'contract_number' => 'Previous contract', 'work_period_start' => '2026-06-01',
+            'work_period_end' => '2026-06-07', 'week_number' => 22,
+        ]);
         $before = (array) DB::table('invoices')->where('id', $invoice->id)->first();
         $logsBefore = DB::table('invoice_status_logs')->get()->toArray();
 
@@ -43,7 +47,7 @@ class InvoicePeriodMigrationTest extends TestCase
         foreach ($before as $key => $value) {
             $this->assertSame($value, $after[$key], "Existing column {$key} changed");
         }
-        foreach (['contract_number', 'work_period_start', 'work_period_end', 'week_number'] as $key) {
+        foreach (['sort_order'] as $key) {
             $this->assertArrayHasKey($key, $after);
             $this->assertNull($after[$key]);
         }
